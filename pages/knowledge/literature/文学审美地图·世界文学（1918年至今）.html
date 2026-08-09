@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="1918年至今世界文学审美地图：现代主义、存在主义、荒诞派、后现代主义、拉美爆炸、后殖民文学与当代全球文学。">
+<title>1918—今 世界文学审美地图</title>
+<style>
+:root{
+  --bg:#111317;
+  --panel:#171a20;
+  --panel2:#1d2129;
+  --ink:#eef1f4;
+  --muted:#9fa8b3;
+  --line:#303640;
+  --blue:#6da7ff;
+  --cyan:#71e2d0;
+  --violet:#b89cff;
+  --red:#ff6f6f;
+  --amber:#e4b35e;
+  --paper:#eef1f3;
+  --paper2:#f7f8fa;
+  --darkink:#1a1d23;
+  --darkmuted:#68707c;
+  --shadow:0 22px 65px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  color:var(--ink);
+  background:
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px),
+    var(--bg);
+  background-size:32px 32px;
+  font-family:"Noto Sans SC","Source Han Sans SC","Microsoft YaHei",system-ui,sans-serif;
+  line-height:1.7;
+}
+a{text-decoration:none;color:inherit}
+.shell{width:min(1280px,calc(100% - 36px));margin:auto}
+
+.hero{
+  position:relative;
+  overflow:hidden;
+  padding:78px 0 56px;
+  background:
+    radial-gradient(circle at 12% 20%,rgba(109,167,255,.18),transparent 26rem),
+    radial-gradient(circle at 88% 20%,rgba(184,156,255,.13),transparent 30rem),
+    linear-gradient(135deg,#0e1014 0%,#151922 60%,#101217 100%);
+  border-bottom:1px solid #343943;
+}
+.hero:before{
+  content:"";
+  position:absolute;inset:0;
+  background:linear-gradient(120deg,transparent 0 46%,rgba(255,255,255,.025) 46% 47%,transparent 47% 100%);
+  pointer-events:none;
+}
+.hero:after{
+  content:"1918 → NOW";
+  position:absolute;
+  right:-10px;bottom:-38px;
+  font-weight:900;
+  font-size:clamp(5rem,13vw,11rem);
+  letter-spacing:-.07em;
+  color:rgba(255,255,255,.035);
+}
+.kicker{
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  font-size:.75rem;
+  font-weight:800;
+  color:var(--cyan);
+}
+h1{
+  margin:18px 0 0;
+  max-width:10em;
+  font-size:clamp(3.2rem,7vw,6.7rem);
+  line-height:.94;
+  letter-spacing:-.065em;
+}
+.deck{
+  max-width:920px;
+  margin:28px 0 0;
+  color:#b7c0cc;
+  font-size:1.06rem;
+}
+.hero-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
+.hero-tags span{
+  border:1px solid #3c424d;
+  padding:7px 11px;
+  background:rgba(255,255,255,.025);
+  color:#c6cdd6;
+  font-size:.8rem;
+}
+.hero-tags .active{
+  color:#0d1115;background:var(--cyan);border-color:var(--cyan);font-weight:800;
+}
+
+.nav-wrap{
+  position:sticky;top:0;z-index:30;
+  background:rgba(17,19,23,.9);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid #2b3038;
+}
+.nav{display:flex;gap:8px;overflow:auto;padding:10px 0;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{
+  flex:0 0 auto;
+  font-size:.81rem;
+  color:#bec6cf;
+  border:1px solid #353b45;
+  padding:7px 11px;
+}
+.nav a:hover{background:var(--blue);color:#0b0e12;border-color:var(--blue)}
+
+main{padding:56px 0 90px}
+.section-intro{
+  display:grid;
+  grid-template-columns:170px 1fr;
+  gap:28px;
+  margin-bottom:34px;
+}
+.section-code{
+  padding-top:8px;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  font-size:.73rem;
+  color:var(--cyan);
+  font-weight:800;
+}
+.section-intro h2{
+  margin:0 0 8px;
+  font-size:clamp(2.2rem,4.8vw,4rem);
+  line-height:1.05;
+  letter-spacing:-.05em;
+}
+.section-intro p{margin:0;color:var(--muted);max-width:930px}
+
+.signal{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-bottom:48px;
+}
+.signal-card{
+  background:linear-gradient(145deg,#181c23,#12151a);
+  border:1px solid #2e343d;
+  padding:22px;
+  box-shadow:var(--shadow);
+}
+.signal-card b{
+  display:block;
+  color:var(--cyan);
+  margin-bottom:8px;
+  font-size:.82rem;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.signal-card p{margin:0;color:#b3bbc5}
+
+.era{margin-bottom:74px}
+.era-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:18px;
+  margin-bottom:18px;
+  padding-bottom:10px;
+  border-bottom:1px solid #3b414b;
+}
+.era-head h3{
+  margin:0;
+  font-size:1.62rem;
+  letter-spacing:-.025em;
+}
+.era-head span{
+  font-size:.76rem;
+  color:var(--blue);
+  text-transform:uppercase;
+  letter-spacing:.1em;
+}
+.region{
+  margin:24px 0 11px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:#aeb7c2;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  font-size:.75rem;
+  font-weight:800;
+}
+.region:after{content:"";height:1px;background:#333943;flex:1}
+
+.core-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+.card{
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(145deg,var(--panel2),var(--panel));
+  border:1px solid #323843;
+  padding:22px;
+  min-height:190px;
+  transition:.2s ease;
+}
+.card:hover{transform:translateY(-3px);border-color:#4a5666;box-shadow:var(--shadow)}
+.card:before{
+  content:"";
+  position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--blue);
+}
+.card .meta{
+  font-size:.71rem;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:#8995a4;
+  margin-bottom:8px;
+}
+.author{
+  font-size:1.48rem;
+  font-weight:850;
+  letter-spacing:-.025em;
+  margin-bottom:6px;
+}
+.works{font-weight:700;color:#d8dde4;margin-bottom:9px}
+.note{margin:0;color:#a8b1bc;font-size:.94rem}
+.featured{
+  grid-column:span 2;
+  display:grid;
+  grid-template-columns:.9fr 1.1fr;
+  gap:28px;
+  background:
+    radial-gradient(circle at 20% 20%,rgba(109,167,255,.08),transparent 18rem),
+    linear-gradient(145deg,#1d222a,#15191f);
+  border-color:#435064;
+}
+.featured .author{font-size:2rem}
+.why{
+  border-left:1px solid #3a4350;
+  padding-left:24px;
+  color:#b7c0ca;
+}
+.why b{
+  display:block;
+  color:var(--cyan);
+  font-size:.77rem;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin-bottom:6px;
+}
+
+.phase-modernism .card:before{background:var(--blue)}
+.phase-postwar .card:before{background:var(--red)}
+.phase-postmodern .card:before{background:var(--violet)}
+.phase-global .card:before{background:var(--cyan)}
+.phase-now .card:before{background:var(--amber)}
+
+/* Lower section: shift to light, globalized editorial design */
+.detail-zone{
+  margin-top:92px;
+  background:linear-gradient(180deg,#e9edf0 0%,#f5f6f8 100%);
+  color:var(--darkink);
+  margin-left:calc(50% - 50vw);
+  margin-right:calc(50% - 50vw);
+  padding:64px max(18px,calc((100vw - 1280px)/2 + 18px)) 80px;
+  border-top:6px solid var(--cyan);
+}
+.detail-hero{
+  display:grid;
+  grid-template-columns:1fr .9fr;
+  gap:34px;
+  align-items:end;
+  margin-bottom:34px;
+}
+.detail-hero h2{
+  margin:0;
+  font-size:clamp(2.2rem,4.8vw,3.8rem);
+  letter-spacing:-.05em;
+  line-height:1.05;
+}
+.detail-hero p{
+  margin:0;
+  color:var(--darkmuted);
+}
+.compact-era{
+  margin-bottom:32px;
+  border-top:2px solid #252933;
+  padding-top:14px;
+}
+.compact-era h3{
+  margin:0 0 13px;
+  font-size:1.2rem;
+  letter-spacing:-.02em;
+}
+.compact-region{
+  margin:14px 0 7px;
+  color:#4f6174;
+  font-size:.76rem;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.compact-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.item{
+  background:#fbfcfd;
+  border:1px solid #d7dce1;
+  padding:12px;
+  min-height:112px;
+}
+.item b{
+  display:block;
+  margin-bottom:4px;
+  font-size:.94rem;
+}
+.item .w{
+  display:block;
+  font-weight:700;
+  font-size:.84rem;
+  color:#46505d;
+  margin-bottom:4px;
+}
+.item p{
+  margin:0;
+  color:#6a727e;
+  font-size:.81rem;
+  line-height:1.55;
+}
+
+.timeline{
+  margin-top:58px;
+  background:#111419;
+  color:#f1f4f6;
+  padding:28px;
+  border-left:5px solid var(--cyan);
+}
+.timeline h2{margin:0 0 18px}
+.tl{
+  display:grid;
+  grid-template-columns:150px 1fr;
+  gap:16px;
+  padding:13px 0;
+  border-top:1px solid #343a43;
+}
+.tl:first-of-type{border-top:0}
+.date{font-weight:900;color:var(--cyan)}
+.tl .txt{color:#b7c0c9}
+
+.genre-strip{
+  margin-top:58px;
+  background:linear-gradient(135deg,#171b22,#202632);
+  color:#edf1f4;
+  padding:28px;
+}
+.genre-strip h2{margin:0 0 8px}
+.genre-strip>p{margin:0;color:#aeb7c1}
+.genre-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-top:20px;
+}
+.genre{
+  border:1px solid #39414c;
+  background:#171b22;
+  padding:15px;
+}
+.genre b{display:block;color:var(--violet);margin-bottom:5px}
+.genre span{font-size:.83rem;color:#b9c1ca}
+
+footer{
+  margin-top:46px;
+  padding-top:22px;
+  border-top:1px solid #333842;
+  color:#8f99a5;
+  font-size:.8rem;
+}
+
+@media(max-width:900px){
+  .section-intro{grid-template-columns:1fr;gap:4px}
+  .signal{grid-template-columns:1fr}
+  .core-grid{grid-template-columns:1fr}
+  .featured{grid-column:auto;grid-template-columns:1fr}
+  .why{border-left:0;border-top:1px solid #3a4350;padding:15px 0 0}
+  .detail-hero{grid-template-columns:1fr}
+  .compact-grid{grid-template-columns:1fr 1fr}
+  .genre-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+  .compact-grid,.genre-grid{grid-template-columns:1fr}
+  .tl{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="shell">
+    <div class="kicker">World Literature · 1918 → Present</div>
+    <h1>1918—今<br>世界文学审美地图</h1>
+    <p class="deck">
+      从第一次世界大战后的文明断裂，到现代主义完成、存在主义与荒诞派、拉美爆炸、后殖民与后现代，再到全球化、记忆政治与当代多中心文学。1918以后，文学不再拥有唯一中心；形式本身逐渐成为对现实的回应。
+    </p>
+    <div class="hero-tags">
+      <span class="active">上部：核心坐标 / 不可不看</span>
+      <span>下部：特色扩展</span>
+      <span>现代主义</span>
+      <span>存在主义</span>
+      <span>后现代</span>
+      <span>后殖民</span>
+      <span>全球化</span>
+      <span>当代文学</span>
+    </div>
+  </div>
+</header>
+
+<div class="nav-wrap">
+  <nav class="shell nav">
+    <a href="#core">核心坐标</a>
+    <a href="#modernism">1918—1945</a>
+    <a href="#postwar">1945—1960s</a>
+    <a href="#postmodern">1960s—1989</a>
+    <a href="#global">1989—2008</a>
+    <a href="#now">2008—今</a>
+    <a href="#detail">详细版本</a>
+    <a href="#timeline">演化主线</a>
+  </nav>
+</div>
+
+<main class="shell">
+
+<section id="core">
+  <div class="section-intro">
+    <div class="section-code">Part I · Essential Coordinates</div>
+    <div>
+      <h2>核心坐标 · 不可不看</h2>
+      <p>这一部分只保留真正改变20世纪及当代文学阅读方式的作家：他们让时间、意识、制度、历史、语言、殖民、媒体和记忆成为新的文学结构。</p>
+    </div>
+  </div>
+
+  <div class="signal">
+    <div class="signal-card"><b>1918以后最大的变化</b><p>文学不再默认“世界是连续而可理解的”。人物、叙述、时间、语言甚至现实本身都开始碎裂。</p></div>
+    <div class="signal-card"><b>从现代主义到当代</b><p>乔伊斯把世界变成意识，卡夫卡把世界变成系统，博尔赫斯把现实变成文本，品钦把社会变成信息网络，塞巴尔德把历史变成残片。</p></div>
+  </div>
+
+  <section class="era phase-modernism" id="modernism">
+    <div class="era-head"><h3>1918—1945 · 现代主义完成与两战之间</h3><span>Fragment · Consciousness · War</span></div>
+
+    <div class="region">英国 / 爱尔兰 / 法国</div>
+    <div class="core-grid">
+      <article class="card featured">
+        <div><div class="meta">Ireland · Modernist Novel</div><div class="author">詹姆斯·乔伊斯</div><div class="works">《尤利西斯》《芬尼根的守灵夜》</div><p class="note">普通人的一天被扩张成现代史诗，小说语言、视角和结构本身成为实验对象。</p></div>
+        <div class="why"><b>为什么不可绕过</b>20世纪小说几乎无法绕开乔伊斯：日常、意识流、神话结构、语言游戏和形式实验在这里同时达到极端。</div>
+      </article>
+      <article class="card"><div class="meta">Britain · Stream of Consciousness</div><div class="author">弗吉尼亚·伍尔夫</div><div class="works">《达洛维夫人》《到灯塔去》《海浪》</div><p class="note">真正的事件发生在意识、记忆和时间内部，而不是传统情节表面。</p></article>
+      <article class="card"><div class="meta">Britain · Poetry</div><div class="author">T.S.艾略特</div><div class="works">《荒原》《四个四重奏》</div><p class="note">神话、典故、都市噪声和精神废墟拼成一战后的现代文明。</p></article>
+      <article class="card featured">
+        <div><div class="meta">France · Memory Novel</div><div class="author">马塞尔·普鲁斯特</div><div class="works">《追忆似水年华》</div><p class="note">记忆不是保存过去，而是在当下重新制造过去；时间本身成为小说主人公。</p></div>
+        <div class="why"><b>为什么不可绕过</b>小说从“讲事件”转向“经验如何形成”，现代心理叙事由此彻底改变。</div>
+      </article>
+    </div>
+
+    <div class="region">德语世界</div>
+    <div class="core-grid">
+      <article class="card featured">
+        <div><div class="meta">Prague · Modernism</div><div class="author">弗朗茨·卡夫卡</div><div class="works">《审判》《城堡》</div><p class="note">人面对没有明确主体、没有解释义务、却无处不在的权力系统。</p></div>
+        <div class="why"><b>为什么不可绕过</b>“卡夫卡式”已经成为描述现代制度性荒诞的通用词汇，他把20世纪人的基本处境变成文学原型。</div>
+      </article>
+      <article class="card"><div class="meta">Germany · Intellectual Novel</div><div class="author">托马斯·曼</div><div class="works">《魔山》《浮士德博士》</div><p class="note">疾病、艺术、文明与思想史被压入大型小说结构。</p></article>
+      <article class="card"><div class="meta">Austria · Modernist Novel</div><div class="author">罗伯特·穆齐尔</div><div class="works">《没有个性的人》</div><p class="note">“没有确定人格”反而成为现代人的根本状态。</p></article>
+      <article class="card"><div class="meta">Germany · Theatre</div><div class="author">贝托尔特·布莱希特</div><div class="works">《三分钱歌剧》《四川好人》《伽利略传》</div><p class="note">故意阻止观众沉浸，让戏剧变成观察社会机制的实验室。</p></article>
+    </div>
+
+    <div class="region">俄罗斯 / 苏联</div>
+    <div class="core-grid">
+      <article class="card featured">
+        <div><div class="meta">USSR · Satire / Fantastic</div><div class="author">米哈伊尔·布尔加科夫</div><div class="works">《大师与玛格丽特》《狗心》</div><p class="note">魔鬼、官僚体系、艺术自由与莫斯科日常混成独一无二的黑色幻想。</p></div>
+        <div class="why"><b>为什么不可绕过</b>它同时是政治讽刺、宗教寓言、爱情小说和魔幻文学，也是苏联文学内部最鲜明的异质声音之一。</div>
+      </article>
+      <article class="card"><div class="meta">USSR · Poetry</div><div class="author">曼德尔施塔姆 / 阿赫玛托娃 / 茨维塔耶娃</div><div class="works">《安魂曲》等诗歌</div><p class="note">历史灾难、文化记忆和私人生命被压进高度克制或高度断裂的语言。</p></article>
+      <article class="card"><div class="meta">USSR · Anti-Utopia</div><div class="author">叶夫根尼·扎米亚京</div><div class="works">《我们》</div><p class="note">数学化社会、透明监控与理性秩序成为现代反乌托邦的重要源头。</p></article>
+    </div>
+
+    <div class="region">美国</div>
+    <div class="core-grid">
+      <article class="card featured">
+        <div><div class="meta">United States · Modernist Novel</div><div class="author">威廉·福克纳</div><div class="works">《喧哗与骚动》《我弥留之际》《押沙龙，押沙龙！》</div><p class="note">美国南方历史被拆成彼此矛盾的记忆、声音与时间碎片。</p></div>
+        <div class="why"><b>为什么不可绕过</b>他把意识流、地方历史、多声部叙事和时间断裂结合成美国现代主义最强大的小说体系之一。</div>
+      </article>
+      <article class="card"><div class="meta">United States · Minimal Prose</div><div class="author">海明威</div><div class="works">《太阳照常升起》《永别了，武器》</div><p class="note">极度克制的语言表面下隐藏战争创伤与无法直接说出的情绪。</p></article>
+    </div>
+  </section>
+
+  <section class="era phase-postwar" id="postwar">
+    <div class="era-head"><h3>1945—1960s · 废墟、存在主义与荒诞</h3><span>Absurd · Freedom · Ruins</span></div>
+
+    <div class="region">法国 / 欧洲</div>
+    <div class="core-grid">
+      <article class="card featured">
+        <div><div class="meta">France · Existentialism</div><div class="author">阿尔贝·加缪</div><div class="works">《局外人》《鼠疫》《堕落》</div><p class="note">如果世界没有预先给予意义，人仍然必须决定自己如何生活。</p></div>
+        <div class="why"><b>为什么不可绕过</b>“荒诞”不是绝望，而是人在没有终极保证的世界里仍然行动的起点。</div>
+      </article>
+      <article class="card"><div class="meta">France · Existentialism</div><div class="author">让-保罗·萨特</div><div class="works">《恶心》《禁闭》</div><p class="note">人被迫自由，并必须为自己的选择承担责任。</p></article>
+      <article class="card featured">
+        <div><div class="meta">Ireland / France · Theatre of the Absurd</div><div class="author">萨缪尔·贝克特</div><div class="works">《等待戈多》《终局》《莫洛伊》</div><p class="note">故事、行动、人格和语言被不断削减，最后只剩下“继续”本身。</p></div>
+        <div class="why"><b>为什么不可绕过</b>贝克特把文学做减法做到极限，证明“几乎什么都没有”仍然可以构成完整戏剧和小说世界。</div>
+      </article>
+    </div>
+
+    <div class="region">东欧 / 苏联</div>
+    <div class="core-grid">
+      <article class="card"><div class="meta">USSR · War Epic</div><div class="author">瓦西里·格罗斯曼</div><div class="works">《生活与命运》</div><p class="note">以《战争与和平》式规模写斯大林格勒、纳粹主义、斯大林主义与个人选择。</p></article>
+      <article class="card"><div class="meta">USSR · Camp Literature</div><div class="author">瓦尔拉姆·沙拉莫夫</div><div class="works">《科雷马故事》</div><p class="note">拒绝“苦难使人高尚”的安慰，把极端环境写到接近零度。</p></article>
+    </div>
+  </section>
+
+  <section class="era phase-postmodern" id="postmodern">
+    <div class="era-head"><h3>1960s—1989 · 后现代、拉美爆炸与冷战文学</h3><span>Text · Myth · Information</span></div>
+
+    <div class="region">拉丁美洲</div>
+    <div class="core-grid">
+      <article class="card featured">
+        <div><div class="meta">Argentina · Metafiction</div><div class="author">豪尔赫·路易斯·博尔赫斯</div><div class="works">《虚构集》《阿莱夫》</div><p class="note">图书馆、迷宫、无限、镜子与伪书让“现实”和“文本”的边界彻底动摇。</p></div>
+        <div class="why"><b>为什么不可绕过</b>博尔赫斯以极短篇幅改变了全世界小说家的想象方式；没有他，很难理解卡尔维诺、埃科、品钦等人的文学。</div>
+      </article>
+      <article class="card featured">
+        <div><div class="meta">Colombia · Magical Realism</div><div class="author">加西亚·马尔克斯</div><div class="works">《百年孤独》《族长的秋天》</div><p class="note">历史、神话、政治与家族记忆在循环时间里变得不可分离。</p></div>
+        <div class="why"><b>为什么不可绕过</b>“魔幻现实主义”不只是奇幻技巧，而是把殖民、暴力与地方记忆写成另一种历史现实。</div>
+      </article>
+      <article class="card"><div class="meta">Mexico · Novel</div><div class="author">胡安·鲁尔福</div><div class="works">《佩德罗·巴拉莫》</div><p class="note">死人、荒地与记忆低声交谈，史诗被压缩成极薄却极重的一本小说。</p></article>
+    </div>
+
+    <div class="region">美国 / 欧洲</div>
+    <div class="core-grid">
+      <article class="card featured">
+        <div><div class="meta">United States · Postmodern Novel</div><div class="author">托马斯·品钦</div><div class="works">《万有引力之虹》《拍卖第四十九批》</div><p class="note">战争、技术、资本、阴谋论和流行文化共同构成巨大信息迷宫。</p></div>
+        <div class="why"><b>为什么不可绕过</b>在品钦那里，现代社会已经不再像巴尔扎克时代那样是一张可以看清的社会网络，而是一个无法判断中心是否存在的信息系统。</div>
+      </article>
+      <article class="card"><div class="meta">Italy · Postmodern / Experimental</div><div class="author">伊塔洛·卡尔维诺</div><div class="works">《看不见的城市》《如果在冬夜，一个旅人》</div><p class="note">文学实验可以极其聪明，同时保持轻盈、游戏与童话感。</p></article>
+      <article class="card"><div class="meta">Czech / France · Novel</div><div class="author">米兰·昆德拉</div><div class="works">《玩笑》《生命中不能承受之轻》</div><p class="note">政治、爱情、偶然与记忆不断被反讽，任何宏大真理都受到怀疑。</p></article>
+      <article class="card"><div class="meta">Poland · Science Fiction</div><div class="author">斯坦尼斯瓦夫·莱姆</div><div class="works">《索拉里斯》</div><p class="note">真正陌生的智能可能根本无法被人类理解，科幻由此进入认识论。</p></article>
+    </div>
+
+    <div class="region">日本 / 非洲</div>
+    <div class="core-grid">
+      <article class="card"><div class="meta">Japan · Absurd Modernism</div><div class="author">安部公房</div><div class="works">《砂女》《箱男》</div><p class="note">身份、城市与异化形成非常接近卡夫卡却又属于日本战后经验的世界。</p></article>
+      <article class="card"><div class="meta">Japan · Postwar Novel</div><div class="author">大江健三郎</div><div class="works">《个人的体验》《万延元年的Football》</div><p class="note">战后日本、个人责任与政治历史被写得粗粝而复杂。</p></article>
+      <article class="card"><div class="meta">Nigeria · Postcolonial Novel</div><div class="author">钦努阿·阿契贝</div><div class="works">《瓦解》</div><p class="note">殖民历史第一次从被殖民社会内部重新叙述。</p></article>
+      <article class="card"><div class="meta">South Africa · Ethical Allegory</div><div class="author">J.M.库切</div><div class="works">《等待野蛮人》《耻》</div><p class="note">权力、殖民、暴力和伦理被写得冷到近乎寓言。</p></article>
+    </div>
+  </section>
+
+  <section class="era phase-global" id="global">
+    <div class="era-head"><h3>1989—2008 · 后冷战与全球化</h3><span>Memory · Migration · Globalization</span></div>
+
+    <div class="region">欧洲 / 拉美 / 全球英语文学</div>
+    <div class="core-grid">
+      <article class="card featured">
+        <div><div class="meta">Germany / Britain · Memory Literature</div><div class="author">W.G.塞巴尔德</div><div class="works">《奥斯特利茨》《土星之环》《移民》</div><p class="note">照片、旅行、档案、小说与历史残片模糊成一种无法彻底分类的记忆文学。</p></div>
+        <div class="why"><b>为什么不可绕过</b>塞巴尔德代表了冷战后文学的一条关键路线：不再相信宏大历史叙述，只能从残片、照片和个人记忆重新拼接过去。</div>
+      </article>
+      <article class="card"><div class="meta">Portugal · Allegorical Novel</div><div class="author">若泽·萨拉马戈</div><div class="works">《失明症漫记》《修道院纪事》</div><p class="note">寓言、历史、政治和长句叙事结合，现代文明常因一个小故障暴露底层结构。</p></article>
+      <article class="card featured">
+        <div><div class="meta">Chile / Mexico / Spain · Global Novel</div><div class="author">罗贝托·波拉尼奥</div><div class="works">《荒野侦探》《2666》</div><p class="note">文学青年、失踪、暴力与拉美历史组成没有真正中心的巨大网络。</p></div>
+        <div class="why"><b>为什么不可绕过</b>他把“文学圈”“政治暴力”“全球迁徙”和“调查失败”揉成一种非常适合后冷战时代的开放结构。</div>
+      </article>
+      <article class="card"><div class="meta">Britain · Memory / Restraint</div><div class="author">石黑一雄</div><div class="works">《长日将尽》《别让我走》</div><p class="note">人物最大的悲剧往往不是不知道真相，而是用极有礼貌的语言不断避免承认真相。</p></article>
+      <article class="card"><div class="meta">Turkey · East / West</div><div class="author">奥尔罕·帕慕克</div><div class="works">《我的名字叫红》《雪》《伊斯坦布尔》</div><p class="note">东方与西方、传统与现代、图像与文字在伊斯坦布尔这一文明交界处碰撞。</p></article>
+    </div>
+  </section>
+
+  <section class="era phase-now" id="now">
+    <div class="era-head"><h3>2008—今 · 多中心、记忆、身体与晚期现代社会</h3><span>Plurality · Trauma · Late Modernity</span></div>
+
+    <div class="region">欧洲</div>
+    <div class="core-grid">
+      <article class="card featured">
+        <div><div class="meta">Norway · Minimal / Spiritual Prose</div><div class="author">约恩·福瑟</div><div class="works">《三部曲》《七部曲》</div><p class="note">重复、沉默、极少事件与宗教感，让小说重新接近音乐和祈祷。</p></div>
+        <div class="why"><b>为什么值得作为当代坐标</b>福瑟代表一种与信息过载完全相反的当代文学方向：不是增加，而是不断减少。</div>
+      </article>
+      <article class="card featured">
+        <div><div class="meta">Hungary · Apocalyptic Prose</div><div class="author">拉斯洛·克拉斯诺霍尔卡伊</div><div class="works">《撒旦探戈》《反抗的忧郁》《战争与战争》</div><p class="note">极长句、末世感、崩坏小镇与无法逃出的社会共同组成缓慢逼近的灾难文学。</p></div>
+        <div class="why"><b>为什么值得作为当代坐标</b>他的作品把“系统性崩坏”写成句法本身，像卡夫卡世界在后冷战时代继续腐烂。</div>
+      </article>
+      <article class="card"><div class="meta">Italy · Social / Family Epic</div><div class="author">埃莱娜·费兰特</div><div class="works">“那不勒斯四部曲”</div><p class="note">女性友谊、阶级、教育、城市与暴力构成战后意大利的私人社会史。</p></article>
+      <article class="card"><div class="meta">France · Autobiographical Sociology</div><div class="author">安妮·埃尔诺</div><div class="works">《悠悠岁月》《一个女人》</div><p class="note">私人记忆不断被还原成阶级、性别和时代共同制造的社会记忆。</p></article>
+    </div>
+
+    <div class="region">亚洲</div>
+    <div class="core-grid">
+      <article class="card featured">
+        <div><div class="meta">South Korea · Trauma / Body</div><div class="author">韩江</div><div class="works">《素食者》《少年来了》《不做告别》</div><p class="note">身体、历史暴力与极度诗性的语言结合，个人感官成为承受集体记忆的场所。</p></div>
+        <div class="why"><b>为什么值得作为当代坐标</b>她代表当代文学的一条重要方向：宏大历史不再从制度上讲，而通过身体、创伤和无法消失的记忆进入文本。</div>
+      </article>
+      <article class="card"><div class="meta">Japan / Germany · Translingual Literature</div><div class="author">多和田叶子</div><div class="works">《献灯使》等</div><p class="note">跨语言、身体、灾难与身份让“母语”本身变得不可靠。</p></article>
+    </div>
+  </section>
+</section>
+
+<section class="detail-zone" id="detail">
+  <div class="detail-hero">
+    <div>
+      <div class="kicker" style="color:#4a7780">Part II · Extended Map</div>
+      <h2>详细版本 · 特色支线与重要补充</h2>
+    </div>
+    <p>进入下半部后，排版由黑暗高对比的现代主义空间切换为更开放的全球化编辑网格：没有单一中心，国别、类型和语言传统同时并行。</p>
+  </div>
+
+  <section class="compact-era">
+    <h3>1918—1945 · 现代主义与两战之间</h3>
+    <div class="compact-region">英国 / 法国 / 德语世界</div>
+    <div class="compact-grid">
+      <div class="item"><b>D.H.劳伦斯</b><span class="w">《恋爱中的女人》《查泰莱夫人的情人》</span><p>工业文明与身体、性、自然生命发生冲突。</p></div>
+      <div class="item"><b>W.B.叶芝</b><span class="w">《塔》《旋转的楼梯》</span><p>神话、衰老、民族政治和历史危机形成高度个人化象征体系。</p></div>
+      <div class="item"><b>塞利纳</b><span class="w">《茫茫黑夜漫游》</span><p>战争、殖民和都市被写成反英雄式黑色漫游。</p></div>
+      <div class="item"><b>安德烈·布勒东</b><span class="w">《娜嘉》《超现实主义宣言》</span><p>梦、潜意识与偶然遭遇被视为比理性现实更真实。</p></div>
+      <div class="item"><b>赫尔曼·布洛赫</b><span class="w">《梦游人》</span><p>价值体系瓦解本身成为小说主人公。</p></div>
+      <div class="item"><b>瓦尔特·本雅明</b><span class="w">《单向街》《柏林童年》</span><p>都市、商品、记忆与碎片式批评把思想写作本身变成文学。</p></div>
+    </div>
+
+    <div class="compact-region">苏联 / 美国</div>
+    <div class="compact-grid">
+      <div class="item"><b>帕斯捷尔纳克</b><span class="w">《日瓦戈医生》及诗歌</span><p>革命史被重新压回一个具体人的爱情、记忆与生命经验。</p></div>
+      <div class="item"><b>伊萨克·巴别尔</b><span class="w">《红色骑兵军》</span><p>革命战争暴力与华丽精确的语言形成强烈反差。</p></div>
+      <div class="item"><b>普拉东诺夫</b><span class="w">《基坑》《切文古尔》</span><p>社会主义新语言被写得陌生、僵硬又悲哀。</p></div>
+      <div class="item"><b>菲茨杰拉德</b><span class="w">《了不起的盖茨比》</span><p>美国梦被写成漂亮、明亮又空洞的幻象。</p></div>
+      <div class="item"><b>斯坦贝克</b><span class="w">《愤怒的葡萄》《人鼠之间》</span><p>经济危机、贫困和迁徙重新让普通劳动者成为史诗主体。</p></div>
+      <div class="item"><b>赫胥黎</b><span class="w">《美丽新世界》</span><p>现代社会可能不靠暴力，而靠消费、娱乐和技术管理欲望。</p></div>
+    </div>
+  </section>
+
+  <section class="compact-era">
+    <h3>1945—1960s · 战后废墟与制度经验</h3>
+    <div class="compact-region">法国 / 东欧 / 苏联</div>
+    <div class="compact-grid">
+      <div class="item"><b>波伏瓦</b><span class="w">《女宾》《第二性》</span><p>现代主体问题被系统地从女性经验重新审视。</p></div>
+      <div class="item"><b>尤内斯库</b><span class="w">《秃头歌女》《犀牛》</span><p>语言变成空洞公式，大众社会则让所有人趋向同质化。</p></div>
+      <div class="item"><b>索尔仁尼琴</b><span class="w">《伊万·杰尼索维奇的一天》《古拉格群岛》</span><p>文学重新承担记录制度机器如何作用于具体人的责任。</p></div>
+      <div class="item"><b>布罗茨基</b><span class="w">诗歌、随笔</span><p>流亡、时间、语言和文化传统构成高度智性的诗歌世界。</p></div>
+      <div class="item"><b>米沃什</b><span class="w">《被禁锢的头脑》及诗歌</span><p>历史、意识形态与流亡如何改变人的内在语言。</p></div>
+    </div>
+  </section>
+
+  <section class="compact-era">
+    <h3>1960s—1989 · 后现代、冷战与全球南方</h3>
+    <div class="compact-region">拉丁美洲</div>
+    <div class="compact-grid">
+      <div class="item"><b>科塔萨尔</b><span class="w">《跳房子》</span><p>游戏、偶然和城市怪异性让读者也成为小说结构的一部分。</p></div>
+      <div class="item"><b>巴尔加斯·略萨</b><span class="w">《城市与狗》《酒吧长谈》</span><p>权力、社会制度与多线叙事结合，是拉美爆炸中最强的结构型写法之一。</p></div>
+      <div class="item"><b>卡洛斯·富恩特斯</b><span class="w">《阿尔特米奥·克罗斯之死》</span><p>革命、现代国家与个人记忆被切碎重组。</p></div>
+    </div>
+
+    <div class="compact-region">美国 / 意大利 / 中东欧</div>
+    <div class="compact-grid">
+      <div class="item"><b>纳博科夫</b><span class="w">《洛丽塔》《微暗的火》</span><p>语言漂亮到危险，叙述者、作者与读者之间变成控制游戏。</p></div>
+      <div class="item"><b>冯内古特</b><span class="w">《第五号屠宰场》</span><p>面对战争和技术灾难，黑色笑话反而成为最严肃的表达。</p></div>
+      <div class="item"><b>唐·德里罗</b><span class="w">《白噪音》</span><p>媒体、消费、恐惧与信息逐渐取代传统现实。</p></div>
+      <div class="item"><b>翁贝托·埃科</b><span class="w">《玫瑰的名字》</span><p>中世纪、侦探小说和符号学被放进巨大知识游戏。</p></div>
+      <div class="item"><b>乔治·佩雷克</b><span class="w">《人生拼图版》</span><p>严格形式限制反而成为制造小说自由的机器。</p></div>
+      <div class="item"><b>赫拉巴尔</b><span class="w">《过于喧嚣的孤独》</span><p>小人物、废纸与历史灾难被写成滑稽又悲伤的口语洪流。</p></div>
+    </div>
+
+    <div class="compact-region">日本 / 非洲 / 南亚</div>
+    <div class="compact-grid">
+      <div class="item"><b>川端康成</b><span class="w">《雪国》《山音》</span><p>细感官、留白与传统审美进入现代小说。</p></div>
+      <div class="item"><b>三岛由纪夫</b><span class="w">《金阁寺》《丰饶之海》</span><p>美、身体、死亡、传统与现代化形成高度人工化的世界。</p></div>
+      <div class="item"><b>远藤周作</b><span class="w">《沉默》</span><p>基督教、文化冲突与信仰失败在日本历史中重新被审视。</p></div>
+      <div class="item"><b>沃莱·索因卡</b><span class="w">戏剧、诗歌</span><p>约鲁巴传统、现代政治与西方戏剧形式复杂碰撞。</p></div>
+      <div class="item"><b>恩古吉·瓦·提安哥</b><span class="w">《一粒麦种》</span><p>殖民、语言与民族解放直接变成文学形式问题。</p></div>
+      <div class="item"><b>萨尔曼·拉什迪</b><span class="w">《午夜之子》</span><p>国家历史、个人身体与语言狂欢共同组成印度独立后的巨大寓言。</p></div>
+    </div>
+  </section>
+
+  <section class="compact-era">
+    <h3>1989—2008 · 后冷战与全球化扩展</h3>
+    <div class="compact-region">东欧 / 俄罗斯 / 南亚</div>
+    <div class="compact-grid">
+      <div class="item"><b>奥尔加·托卡尔丘克</b><span class="w">《云游》《太古和其他的时间》</span><p>边界、迁徙、历史碎片和神话组成去中心化的欧洲叙事。</p></div>
+      <div class="item"><b>赫塔·米勒</b><span class="w">《心兽》《呼吸秋千》</span><p>独裁、监控和流亡通过高度陌生化的语言进入文学。</p></div>
+      <div class="item"><b>维克托·佩列文</b><span class="w">《恰巴耶夫与虚空》《Generation “П”》</span><p>苏联意识形态、资本主义广告、佛学与虚拟现实混成后苏联幻觉。</p></div>
+      <div class="item"><b>斯维特兰娜·阿列克谢耶维奇</b><span class="w">《二手时间》等</span><p>大量普通人的声音共同组成苏联文明的口述史。</p></div>
+      <div class="item"><b>V.S.奈保尔</b><span class="w">《大河湾》</span><p>殖民结束后，身份漂移与无家可归并不会自动消失。</p></div>
+      <div class="item"><b>阿兰达蒂·洛伊</b><span class="w">《微物之神》</span><p>家庭、种姓、政治与儿童感知通过破碎时间结构结合。</p></div>
+    </div>
+  </section>
+
+  <section class="compact-era">
+    <h3>2008—今 · 当代多中心扩展</h3>
+    <div class="compact-region">欧洲 / 亚洲 / 跨国写作</div>
+    <div class="compact-grid">
+      <div class="item"><b>米歇尔·维勒贝克</b><span class="w">《基本粒子》《地图与疆域》</span><p>性、消费、孤独与自由主义现代性的疲惫被写得异常冷酷。</p></div>
+      <div class="item"><b>村上春树</b><span class="w">《世界尽头与冷酷仙境》《奇鸟行状录》</span><p>都市孤独、流行文化、梦境与平行现实形成全球化时代极有辨识度的语言。</p></div>
+      <div class="item"><b>阮清越</b><span class="w">《同情者》</span><p>战争叙事被一个同时属于双方、又不完全属于任何一方的人重新讲述。</p></div>
+    </div>
+  </section>
+
+  <section class="timeline" id="timeline">
+    <h2>1918—今的文学演化主线</h2>
+    <div class="tl"><div class="date">1918—1945</div><div class="txt">现代主义完成：世界被拆成意识、时间、碎片与制度，小说开始主动破坏传统现实主义。</div></div>
+    <div class="tl"><div class="date">1945—1960s</div><div class="txt">战后废墟：存在主义、荒诞派和极权经验让文学重新追问自由、意义与人的最低限度。</div></div>
+    <div class="tl"><div class="date">1960s—1989</div><div class="txt">后现代与全球南方崛起：现实变成文本、神话、信息和多重历史，欧洲不再是唯一中心。</div></div>
+    <div class="tl"><div class="date">1989—2008</div><div class="txt">后冷战与全球化：迁徙、档案、记忆、身份和跨文化叙事成为新的文学结构。</div></div>
+    <div class="tl"><div class="date">2008—今</div><div class="txt">多中心时代：没有统一“主义”，文学围绕历史创伤、身体、生态、晚期资本主义、数字生活和语言本身展开。</div></div>
+  </section>
+
+  <section class="genre-strip">
+    <h2>横向看：1918以后的几条核心路线</h2>
+    <p>现代文学史逐渐从“一个中心的连续进步”变成多个并行传统彼此交叉。</p>
+    <div class="genre-grid">
+      <div class="genre"><b>意识与时间</b><span>普鲁斯特 → 伍尔夫 → 福克纳 → 石黑一雄 → 当代记忆文学</span></div>
+      <div class="genre"><b>制度与荒诞</b><span>卡夫卡 → 扎米亚京 → 奥威尔 → 贝克特 → 昆德拉 → 克拉斯诺霍尔卡伊</span></div>
+      <div class="genre"><b>文本与信息</b><span>博尔赫斯 → 卡尔维诺 → 埃科 → 品钦 → 德里罗 → 当代数字现实</span></div>
+      <div class="genre"><b>历史与创伤</b><span>阿赫玛托娃 → 格罗斯曼 → 沙拉莫夫 → 塞巴尔德 → 韩江 → 当代记忆政治</span></div>
+    </div>
+  </section>
+
+  <footer>
+    1918—今 世界文学审美地图 · 从现代主义到全球化与当代多中心文学 · 上部强调核心坐标，下部保留国别、体裁与特色支线
+  </footer>
+</section>
+
+</main>
+</body>
+</html>
