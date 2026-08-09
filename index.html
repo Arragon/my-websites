@@ -18,7 +18,10 @@
     .toolbar { display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:22px; }
     h2 { margin:0; font:600 1rem/1.3 ui-sans-serif,system-ui,sans-serif; letter-spacing:.02em; }
     #count { color:var(--muted); font-size:.9rem; }
-    #pages { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; }
+    #pages { display:grid; gap:38px; }
+    .group-title { margin:0 0 14px; font:600 1rem/1.3 ui-sans-serif,system-ui,sans-serif; letter-spacing:.02em; }
+    .group { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; }
+    .group-title { grid-column:1/-1; }
     .card { display:flex; flex-direction:column; min-height:180px; padding:23px; color:inherit; text-decoration:none; background:rgba(255,255,255,.56); border:1px solid var(--line); border-radius:14px; box-shadow:0 5px 20px rgba(74,55,27,.035); transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease; }
     .card:hover { transform:translateY(-3px); border-color:#cbb8a0; box-shadow:0 12px 28px rgba(74,55,27,.10); }
     .number { color:var(--olive); font:600 .78rem/1 ui-sans-serif,system-ui,sans-serif; letter-spacing:.08em; }
@@ -49,6 +52,11 @@
     const repository = 'my-websites';
     const branch = 'main';
     const directory = 'pages';
+    const groupLabels = {
+      projects: '项目企划',
+      'knowledge/literature': '知识地图 · 文学与美学',
+      'knowledge/philosophy': '知识地图 · 哲学与思想',
+    };
     const container = document.querySelector('#pages');
     const count = document.querySelector('#count');
     const titleFrom = (filename) => decodeURIComponent(filename)
@@ -58,18 +66,35 @@
       .trim();
     async function loadPages() {
       try {
-        const response = await fetch(`https://api.github.com/repos/${owner}/${repository}/contents/${directory}?ref=${branch}`, { headers: { Accept: 'application/vnd.github+json' } });
+        const response = await fetch(`https://api.github.com/repos/${owner}/${repository}/git/trees/${branch}?recursive=1`, { headers: { Accept: 'application/vnd.github+json' } });
         if (!response.ok) throw new Error(`GitHub API ${response.status}`);
-        const files = (await response.json()).filter(item => item.type === 'file' && /\.html?$/i.test(item.name)).sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+        const files = (await response.json()).tree
+          .filter(item => item.type === 'blob' && item.path.startsWith(`${directory}/`) && /\.html?$/i.test(item.path))
+          .sort((a, b) => a.path.localeCompare(b.path, 'zh-CN'));
         count.textContent = `${files.length} 个页面`;
         if (!files.length) { container.innerHTML = '<p class="empty">pages/ 目录中还没有 HTML 文件。</p>'; return; }
-        container.replaceChildren(...files.map((file, index) => {
-          const link = document.createElement('a');
-          link.className = 'card'; link.href = `./${directory}/${file.name.split('/').map(encodeURIComponent).join('/')}`;
-          link.innerHTML = `<span class="number">${String(index + 1).padStart(2, '0')}</span><span class="title"></span><span class="path"></span>`;
-          link.querySelector('.title').textContent = titleFrom(file.name);
-          link.querySelector('.path').textContent = `${directory}/${file.name}`;
-          return link;
+        const groups = files.reduce((all, file) => {
+          const name = file.path.split('/').slice(1, -1).join('/') || '未分类';
+          (all[name] ||= []).push(file);
+          return all;
+        }, {});
+        const orderedGroups = Object.entries(groups).sort(([a], [b]) => (groupLabels[a] || a).localeCompare(groupLabels[b] || b, 'zh-CN'));
+        container.replaceChildren(...orderedGroups.map(([groupName, groupFiles]) => {
+          const section = document.createElement('section');
+          const heading = document.createElement('h3');
+          heading.className = 'group-title'; heading.textContent = groupLabels[groupName] || groupName;
+          const grid = document.createElement('div'); grid.className = 'group';
+          grid.append(heading, ...groupFiles.map((file, index) => {
+            const link = document.createElement('a');
+            const filename = file.path.split('/').at(-1);
+            link.className = 'card'; link.href = `./${file.path.split('/').map(encodeURIComponent).join('/')}`;
+            link.innerHTML = `<span class="number">${String(index + 1).padStart(2, '0')}</span><span class="title"></span><span class="path"></span>`;
+            link.querySelector('.title').textContent = titleFrom(filename);
+            link.querySelector('.path').textContent = file.path;
+            return link;
+          }));
+          section.append(grid);
+          return section;
         }));
       } catch (error) {
         count.textContent = '无法读取目录';
