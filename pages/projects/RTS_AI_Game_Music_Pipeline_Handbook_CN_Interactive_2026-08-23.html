@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>RTS AI 游戏音乐设计与生产管线手册｜2026-08-23</title>
+<style>
+:root{
+  --bg:#0c0f16;--panel:#121824;--panel2:#181f2d;--text:#edf1f8;--muted:#a1adbd;
+  --line:#2a3345;--accent:#8a9fff;--accent2:#77dfc5;--warn:#f6c96d;--danger:#ff8686;--good:#8de49f;
+  --human:#72a8ff;--kaiju:#b28cff;--system:#78d3a7;--chip:#1c2535;--shadow:0 10px 30px rgba(0,0,0,.2);
+}
+html[data-theme="light"]{
+  --bg:#f5f6f9;--panel:#fff;--panel2:#f8f9fc;--text:#1c2531;--muted:#667589;
+  --line:#dce3ec;--accent:#516bd6;--accent2:#157e69;--warn:#986700;--danger:#b73c3c;--good:#2d7f40;
+  --human:#326ed0;--kaiju:#7650be;--system:#2d8b59;--chip:#edf2f8;--shadow:0 8px 24px rgba(30,50,80,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.72 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+button,input,select,textarea{font:inherit}
+.topbar{position:sticky;top:0;z-index:60;display:flex;gap:9px;align-items:center;padding:10px 18px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.brand{font-weight:800;white-space:nowrap}
+.search{flex:1;max-width:570px;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px 11px}
+.iconbtn,.filterbtn,.action{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:9px;padding:7px 10px;cursor:pointer}
+.iconbtn:hover,.filterbtn:hover,.filterbtn.active,.action:hover{border-color:var(--accent);background:var(--chip)}
+.layout{display:grid;grid-template-columns:270px minmax(0,1fr);max-width:1520px;margin:auto}
+.sidebar{position:sticky;top:54px;height:calc(100vh - 54px);overflow:auto;padding:20px 16px;border-right:1px solid var(--line)}
+.sidebar .meta{font-size:12px;color:var(--muted);margin-bottom:14px}
+.nav a{display:block;color:var(--muted);padding:6px 9px;border-left:2px solid transparent;border-radius:0 8px 8px 0}
+.nav a:hover,.nav a.active{color:var(--text);background:var(--chip);border-left-color:var(--accent);text-decoration:none}
+.main{padding:28px clamp(18px,4vw,58px) 80px;max-width:1200px}
+.hero{padding:30px;border:1px solid var(--line);border-radius:18px;background:
+radial-gradient(circle at 84% 8%,color-mix(in srgb,var(--accent) 19%,transparent),transparent 33%),
+linear-gradient(145deg,var(--panel),var(--panel2));box-shadow:var(--shadow)}
+.hero h1{font-size:clamp(28px,4vw,45px);line-height:1.14;margin:0 0 12px}
+.hero p{max-width:930px;color:var(--muted);font-size:16px}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.badge{padding:5px 9px;border:1px solid var(--line);border-radius:999px;background:var(--chip);font-size:12px;color:var(--muted)}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0 4px}
+.summary>div{padding:14px;background:color-mix(in srgb,var(--panel2) 90%,transparent);border:1px solid var(--line);border-radius:12px}.summary b{display:block;margin-bottom:5px}
+section{scroll-margin-top:72px;margin-top:34px}
+h2{font-size:26px;margin:0 0 12px}h3{font-size:19px;margin:0 0 9px}h4{font-size:16px;margin:0 0 6px}
+.lead{color:var(--muted);max-width:940px}
+.pipeline{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--panel);margin:16px 0}
+.stagechip{display:inline-flex;align-items:center;padding:7px 10px;background:var(--chip);border:1px solid var(--line);border-radius:10px}.arrow{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:17px;box-shadow:var(--shadow)}
+.card .kicker{font-size:12px;color:var(--accent2);text-transform:uppercase;letter-spacing:.07em}.mini{font-size:13px;color:var(--muted)}
+.branch-human{--branch:var(--human)}.branch-kaiju{--branch:var(--kaiju)}.branch-system{--branch:var(--system)}.branch-mark{border-top:3px solid var(--branch)}
+.callout{border-left:4px solid var(--accent);padding:12px 15px;background:var(--panel);border-radius:0 12px 12px 0;margin:14px 0}
+.callout.good{border-left-color:var(--good)}.callout.warn{border-left-color:var(--warn)}.callout.danger{border-left-color:var(--danger)}
+details{border:1px solid var(--line);background:var(--panel);border-radius:12px;margin:10px 0;overflow:hidden}
+summary{cursor:pointer;padding:12px 14px;font-weight:700;background:var(--panel2)}details .inside{padding:5px 14px 14px}
+table{width:100%;border-collapse:collapse;margin:12px 0 18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{padding:10px 11px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}th{background:var(--panel2);font-size:13px}tr:last-child td{border-bottom:0}
+.tag{display:inline-block;font-size:11px;padding:2px 6px;border-radius:6px;background:var(--chip);border:1px solid var(--line);margin:1px}.rating{white-space:nowrap;color:var(--warn)}
+.term{border-bottom:1px dotted var(--accent);cursor:help}
+.steps{counter-reset:step}.step{position:relative;padding:14px 15px 14px 54px;border:1px solid var(--line);border-radius:12px;background:var(--panel);margin:9px 0}
+.step:before{counter-increment:step;content:counter(step);position:absolute;left:14px;top:13px;width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:white;font-weight:800}
+.gate{border:1px solid color-mix(in srgb,var(--good) 55%,var(--line));background:color-mix(in srgb,var(--good) 7%,var(--panel));padding:12px 14px;border-radius:12px;margin:10px 0}
+.stop{border:1px solid color-mix(in srgb,var(--warn) 55%,var(--line));background:color-mix(in srgb,var(--warn) 7%,var(--panel));padding:12px 14px;border-radius:12px;margin:10px 0}
+.links{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.links a{padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--chip);font-size:12px}
+.resource-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.resource{padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.resource small{display:block;color:var(--muted);margin-top:2px}
+.glossary{columns:2;column-gap:24px}.glossary div{break-inside:avoid;margin-bottom:10px}.glossary b{color:var(--accent2)}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:9px 10px}
+textarea{min-height:92px;resize:vertical}
+.output{white-space:pre-wrap;background:#080b11;color:#dfe8f5;border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:12px;font:13px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace}
+html[data-theme="light"] .output{background:#f1f4f8;color:#1e2937}
+.lesson{display:grid;grid-template-columns:80px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.lesson:last-child{border-bottom:0}.lesson strong{color:var(--accent2)}
+.hidden-by-search,.hidden-by-branch{display:none!important}
+footer{margin-top:40px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:18px}
+@media(max-width:980px){.layout{grid-template-columns:1fr}.sidebar{display:none}.main{padding:20px 16px 60px}.summary,.grid3,.grid2,.formgrid{grid-template-columns:1fr}.resource-list{grid-template-columns:1fr}.glossary{columns:1}.brand{display:none}}
+@media print{.topbar,.sidebar{display:none}.layout{display:block}.main{max-width:none;padding:0}.card,details{box-shadow:none;break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">RTS AI Music Pipeline</div>
+  <input id="search" class="search" placeholder="搜索：例如“Motif / Suno / MIDI / Kaiju / Quartz / 循环”">
+  <button class="filterbtn active" data-filter="all">全部</button>
+  <button class="filterbtn" data-filter="human">Human</button>
+  <button class="filterbtn" data-filter="kaiju">Kaiju</button>
+  <button class="filterbtn" data-filter="system">系统</button>
+  <button id="theme" class="iconbtn">◐</button>
+  <button id="expand" class="iconbtn">展开</button>
+</div>
+
+<div class="layout">
+<aside class="sidebar">
+  <div class="meta">版本 v1.0 · 2026-08-23<br>零乐理 / 单人 RTS 音乐生产</div>
+  <nav class="nav" id="nav">
+    <a href="#overview">0. 先看结论</a>
+    <a href="#zero">1. 零乐理怎么开始</a>
+    <a href="#bible">2. Music Bible</a>
+    <a href="#brief">3. Music Brief 工具</a>
+    <a href="#generate">4. AI 作曲与探索</a>
+    <a href="#select">5. 锁定 Motif / 结构</a>
+    <a href="#stems">6. Stems / MIDI</a>
+    <a href="#reaper">7. REAPER 制作</a>
+    <a href="#human">8. Human 音乐语言</a>
+    <a href="#kaiju">9. Kaiju 音乐语言</a>
+    <a href="#adaptive">10. 动态音乐架构</a>
+    <a href="#ue">11. UE5.8 MetaSounds + Quartz</a>
+    <a href="#qa">12. QA / 版权 / 入库</a>
+    <a href="#budget">13. 工具与性价比</a>
+    <a href="#learn">14. 最小学习路线</a>
+    <a href="#resources">15. 学习资料</a>
+    <a href="#glossary">16. 中英术语表</a>
+  </nav>
+</aside>
+
+<main class="main">
+<header class="hero" id="overview">
+  <h1>AI 辅助游戏音乐设计与生产管线手册</h1>
+  <p>这是给“不会乐器、没系统学过乐理，但有明确审美和游戏设计目标”的单人开发者写的。目标不是把你训练成传统作曲家，而是让你能担任 <b>Music Director（音乐导演）+ Editor（编辑者）+ Interactive Music Designer（交互音乐系统设计者）</b>，把 AI 生成的音乐种子变成真正能随 RTS 战况运行的游戏配乐。</p>
+  <div class="badges">
+    <span class="badge">Suno Studio 2.0</span><span class="badge">Stable Audio 3.0</span><span class="badge">REAPER</span>
+    <span class="badge">UE5.8 MetaSounds</span><span class="badge">Quartz</span>
+    <span class="badge">零乐器基础可执行</span><span class="badge">动态音乐优先</span>
+  </div>
+  <div class="summary">
+    <div><b>不要先学一年乐理</b><span class="mini">先学十几个能帮助沟通和编辑的词；不会弹琴不妨碍你用 MIDI、AI 和 DAW 工作。</span></div>
+    <div><b>不要“一键生成 OST”</b><span class="mini">AI 负责探索和素材；你负责筛选 Motif、结构、配器方向和游戏状态映射。</span></div>
+    <div><b>最终资产不是一首 WAV</b><span class="mini">而是 loop、stem、transition、intro/outro 和参数化状态组成的交互式音乐系统。</span></div>
+  </div>
+</header>
+
+<section class="searchable" data-tags="overview 流程 pipeline">
+  <h2>一张图看完整管线</h2>
+  <div class="pipeline">
+    <a class="stagechip" href="#bible">① Music Bible</a><span class="arrow">→</span>
+    <a class="stagechip" href="#brief">② 自然语言 Brief</a><span class="arrow">→</span>
+    <a class="stagechip" href="#generate">③ AI 草稿</a><span class="arrow">→</span>
+    <a class="stagechip" href="#select">④ 锁 Motif / Tempo</a><span class="arrow">→</span>
+    <a class="stagechip" href="#stems">⑤ Stems / MIDI</a><span class="arrow">→</span>
+    <a class="stagechip" href="#reaper">⑥ REAPER 编排</a><span class="arrow">→</span>
+    <a class="stagechip" href="#adaptive">⑦ 动态模块</a><span class="arrow">→</span>
+    <a class="stagechip" href="#ue">⑧ UE5.8</a>
+  </div>
+  <div class="callout good"><b>核心思路：</b>你不是“不会作曲的人让 AI 替你作曲”，而是“有明确世界观与审美的人，用 AI 获得可编辑的音乐材料，再把它组织成游戏系统”。</div>
+</section>
+
+<section id="zero" class="searchable" data-tags="zero theory 零乐理 BPM beat bar key motif stem chord">
+  <h2>1. 零乐理怎么开始：先只学这些</h2>
+  <p class="lead">你不需要先会钢琴，也不需要先背和弦。下面这些词能覆盖第一阶段 80% 的实际工作。</p>
+  <div class="grid3">
+    <div class="card"><h3>BPM</h3><p>速度。60 BPM 很慢，120 BPM 明显更快。你只需要先会判断“我要更慢、更压迫还是更急迫”。</p></div>
+    <div class="card"><h3>Beat / Bar</h3><p>Beat 是拍，Bar 是小节。游戏切换音乐最好发生在 beat/bar 边界，而不是随便切。</p></div>
+    <div class="card"><h3>Key / Mode</h3><p>调性/调式。前期不用背音阶，只需知道它影响明暗、稳定与紧张；AI 可以替你翻译。</p></div>
+    <div class="card"><h3>Motif</h3><p>短小、可记忆的音乐动机。你的阵营、Kaiju、危机状态可以共享同一 Motif 的不同变体。</p></div>
+    <div class="card"><h3>Stem</h3><p>分轨，例如 percussion、strings、brass、drone。动态音乐依靠 stem 开关和强弱变化。</p></div>
+    <div class="card"><h3>MIDI</h3><p>不是声音，而是“哪些音、何时响、多长、多大力度”的控制数据。不会弹琴也能用鼠标编辑。</p></div>
+  </div>
+  <div class="callout warn"><b>暂时不用学：</b>复杂和声分析、传统对位、钢琴指法、完整管弦乐法、爵士和声。等你实际遇到问题再补。</div>
+</section>
+
+<section id="bible" class="searchable" data-tags="Music Bible 人类 怪兽 human kaiju style">
+  <h2>2. Music Bible：先定义这个世界“为什么这样响”</h2>
+  <div class="grid2">
+    <div class="card branch-human branch-mark" data-branch="human">
+      <div class="kicker">Human</div><h3>秩序、工业、组织、重复</h3>
+      <p>机械脉冲、工业打击、低弦、低铜管、冷电子纹理、有限旋律。避免廉价“英雄军乐 / 预告片史诗感”。</p>
+      <p class="mini">关键词：controlled / mechanical / restrained / massive / procedural / cold / organized。</p>
+    </div>
+    <div class="card branch-kaiju branch-mark" data-branch="kaiju">
+      <div class="kicker">Kaiju</div><h3>自然、异常、巨大时间尺度</h3>
+      <p>低频 drone、极慢和声变化、异常音程、频谱纹理、远距离合唱/气流感。音乐与环境声边界可以故意模糊。</p>
+      <p class="mini">关键词：geological / atmospheric / non-human / unstable / glacial / spectral / unresolved。</p>
+    </div>
+  </div>
+  <details open><summary>Music Bible 最小模板</summary><div class="inside">
+    <p><b>核心情绪：</b>不是“史诗”，而是具体描述玩家此刻应该怎样理解战场。<br>
+    <b>人类音乐 DNA：</b>3–6 个固定声音/乐器/节奏语言。<br>
+    <b>Kaiju 音乐 DNA：</b>3–6 个固定声音/和声/频谱语言。<br>
+    <b>共享 Motif：</b>哪些 3–8 个音的短动机反复出现。<br>
+    <b>禁止项：</b>例如 trailer drums、英雄号角、默认女声合唱、廉价 horror sting。<br>
+    <b>动态原则：</b>战斗升级是“切歌”还是“加层”；什么事件才允许真正换段。</p>
+  </div></details>
+</section>
+
+<section id="brief" class="searchable" data-tags="brief prompt generator 工具 自然语言">
+  <h2>3. Music Brief 生成器：不会乐理也能给出专业输入</h2>
+  <p class="lead">填写你真正知道的东西——场景、情绪、强度、要什么、不要什么。下面会整理成可复制给 AI 的结构化 Brief。</p>
+  <div class="card">
+    <div class="formgrid">
+      <div><label>场景 / Gameplay State</label><input id="fScene" value="部队在暴雨前的低云下向战区集结"></div>
+      <div><label>强度 0–10</label><input id="fIntensity" type="number" min="0" max="10" value="3"></div>
+      <div><label>希望玩家感到</label><input id="fEmotion" value="冷静、巨大、压迫，但不是悲壮或英雄主义"></div>
+      <div><label>希望出现的声音</label><input id="fWant" value="低弦、低铜管、机械脉冲、金属打击、冷电子纹理"></div>
+      <div><label>明确禁止</label><input id="fAvoid" value="预告片大鼓、英雄号角、女声合唱、过强主旋律"></div>
+      <div><label>用途</label><select id="fUse"><option>可循环的游戏内背景音乐</option><option>战斗高强度层</option><option>Kaiju 出现事件</option><option>菜单 / 战略地图</option><option>结算 / 余波</option></select></div>
+    </div>
+    <label style="margin-top:10px">补充说明</label><textarea id="fNotes">前 16 小节几乎没有主旋律；之后逐渐加入机械节奏。希望后续能拆成 Atmosphere / Pulse / Percussion / Low Strings / Brass 五个 stems。</textarea>
+    <div style="display:flex;gap:8px;margin-top:10px"><button class="action" id="makeBrief">生成 Brief</button><button class="action" id="copyBrief">复制</button></div>
+    <div id="briefOut" class="output"></div>
+  </div>
+</section>
+
+<section id="generate" class="searchable" data-tags="Suno Studio 2 Stable Audio 3 Eleven Music Udio AI composition">
+  <h2>4. AI 作曲与探索：把生成器当“合作伙伴”，不是 OST 打印机</h2>
+  <table>
+    <thead><tr><th>工具</th><th>最适合你</th><th>优点</th><th>风险 / 限制</th><th>定位</th></tr></thead>
+    <tbody>
+      <tr><td><b>Suno Studio 2.0</b></td><td>不会乐理时的主要创作前端</td><td>MIDI 导入/编辑、MIDI→音频提示、Chat Bar、automation、stem separation、内置合成器；可以自然语言协作。</td><td>容易陷入无限 reroll；平台下载政策会变化；直接 AI 成曲不等于游戏音乐结构。</td><td><span class="tag">主创作前端</span></td></tr>
+      <tr><td><b>Stable Audio 3.0</b></td><td>stem、texture、loop、audio-to-audio、局部重做</td><td>full song / individual stems、audio-to-audio、inpainting、continuation；开放权重路线；官方称使用完整许可数据训练。</td><td>更像生产工具，需要你理解层和结构；不是“最省脑”的前端。</td><td><span class="tag">正式生产后端</span></td></tr>
+      <tr><td><b>Eleven Music v2</b></td><td>结构化段落、API、原型 challenger</td><td>可控结构、reference、API 能力强。</td><td>当前 Self-Serve 条款明确排除 Studio Games；多平台商业游戏不能默认直接用作最终 OST。</td><td><span class="tag">原型 / Challenger</span></td></tr>
+      <tr><td><b>Udio</b></td><td>灵感和 style exploration</td><td>音乐质量与审美探索仍有价值。</td><td>官方当前禁用 audio/video/stems 下载，因此不应成为生产依赖。</td><td><span class="tag">Playground</span></td></tr>
+    </tbody>
+  </table>
+  <div class="links">
+    <a href="https://suno.com/blog/studio-2" target="_blank">Suno Studio 2.0</a>
+    <a href="https://stability.ai/guides/stable-audio-3-prompt-guide" target="_blank">Stable Audio 3.0 Prompt Guide</a>
+    <a href="https://elevenlabs.io/music" target="_blank">Eleven Music</a>
+    <a href="https://help.udio.com/en/articles/12683565-changes-associated-with-the-universal-music-group-umg-partnership" target="_blank">Udio 下载限制说明</a>
+  </div>
+  <div class="stop"><b>防抽卡规则：</b>每个 cue 第一轮最多做 4–8 个草稿；只要出现一个真正有价值的 Motif / texture / groove，就转入编辑。不要为了“再好 5%”生成 50 次。</div>
+</section>
+
+<section id="select" class="searchable" data-tags="motif tempo key structure lock 筛选">
+  <h2>5. 从“好听的草稿”锁定可复用音乐 DNA</h2>
+  <div class="steps">
+    <div class="step"><b>先选 Motif。</b> 找到 3–8 个音、一个节奏型或一段短 texture，能在不同场景反复变化。</div>
+    <div class="step"><b>锁 Tempo。</b> 同一音乐家族尽量共享或使用互相兼容的 BPM，方便运行时转场。</div>
+    <div class="step"><b>锁基本调性。</b> 你不需要自己判断是什么调；让 AI/DAW 识别，然后记录下来。</div>
+    <div class="step"><b>删掉“AI 炫技”。</b> 复杂但无法循环、无法拆分、与游戏抢注意力的段落通常没有生产价值。</div>
+  </div>
+  <div class="gate"><b>Creative Gate：</b>从这里开始，禁止 AI 随意改掉核心 Motif、主要节奏 DNA 和世界观声音语言。后续 AI 是编辑助手，不再是自由作曲者。</div>
+</section>
+
+<section id="stems" class="searchable" data-tags="stems MIDI separation split extraction instruments">
+  <h2>6. Stems 与 MIDI：把 AI 的“成品”重新变成可编辑材料</h2>
+  <div class="grid2">
+    <div class="card"><h3>Stems（分轨）</h3><p>优先拆成 Atmosphere / Pulse / Percussion / Bass / Low Strings / High Strings / Brass / Melody / Kaiju Layer。运行时垂直分层就靠它们。</p></div>
+    <div class="card"><h3>MIDI</h3><p>如果旋律/低音/节奏很好，但 AI 乐器音色发糊，就保留 MIDI，换成统一的 VST / Sample Library。你用鼠标就能编辑，不需要会弹琴。</p></div>
+  </div>
+  <details open><summary>零基础的 MIDI 编辑只需要会 5 件事</summary><div class="inside">
+    <p>拖动音符改变时间；上下拖改变音高；拉长/缩短改变时值；Velocity 改力度；复制 4/8 小节做变体。其余东西以后再学。</p>
+  </div></details>
+  <div class="callout good"><b>长期价值：</b>如果 Human 的 20 首音乐最后都使用同一套弦乐、铜管和工业 percussion 音色，即使最初来自不同 AI 草稿，最终也会明显更像“同一个游戏”的配乐。</div>
+</section>
+
+<section id="reaper" class="searchable" data-tags="REAPER DAW arrangement VST sample library loop mixing">
+  <h2>7. REAPER：最终音乐制作中枢</h2>
+  <p class="lead">与音效共用 REAPER，可以减少你学习第二套 DAW 的成本。REAPER 的价值不是“自动帮你作曲”，而是让所有素材最终进入同一套可控工程。</p>
+  <div class="steps">
+    <div class="step"><b>导入 stems / MIDI。</b> 先保持 AI 原版本作为 reference，不覆盖。</div>
+    <div class="step"><b>整理 4 / 8 / 16 / 32 小节结构。</b> 游戏音乐要优先服从可循环与可转场，而不是流媒体歌曲结构。</div>
+    <div class="step"><b>替换关键虚拟乐器。</b> 先用免费 Berlin Free Orchestra、SINEfactory、Spitfire Symphony Orchestra Discover 等即可。</div>
+    <div class="step"><b>制作 Loop 与 Transition。</b> 检查结尾混响、尾音和下一循环是否自然。</div>
+    <div class="step"><b>导出 stem。</b> 每层长度、起点、BPM、采样率必须完全一致，才能在引擎里相位和时间对齐。</div>
+  </div>
+  <div class="links">
+    <a href="https://www.reaper.fm/" target="_blank">REAPER</a>
+    <a href="https://www.reaper.fm/videos.php" target="_blank">REAPER 官方视频</a>
+    <a href="https://www.orchestraltools.com/sinefactory" target="_blank">Orchestral Tools SINEfactory</a>
+    <a href="https://www.spitfireaudio.com/" target="_blank">Spitfire Audio</a>
+  </div>
+</section>
+
+<section id="human" class="searchable" data-tags="Human industrial military music 机械 音乐" data-branch="human">
+  <h2>8. Human 音乐语言：不是军乐，是工业文明的“组织感”</h2>
+  <div class="card branch-human branch-mark">
+    <p>优先建立机械 pulse、重复 ostinato、低弦、低铜管、工业 percussion 和冷电子纹理。旋律克制，强调“成千上万单位协同运转”的秩序感。</p>
+  </div>
+  <div class="grid3">
+    <div class="card branch-human branch-mark"><h3>Strategic</h3><p>Atmosphere + 极轻 pulse；不要抢玩家规划注意力。</p></div>
+    <div class="card branch-human branch-mark"><h3>Combat</h3><p>加入 percussion / ostinato / bass，仍保持可读性。</p></div>
+    <div class="card branch-human branch-mark"><h3>Momentum</h3><p>当人类战局取得优势时，让同一 Motif 更明确，而不是突然换成“胜利主题”。</p></div>
+  </div>
+</section>
+
+<section id="kaiju" class="searchable" data-tags="Kaiju monster drone spectral choir atmospheric music" data-branch="kaiju">
+  <h2>9. Kaiju 音乐语言：让玩家不确定自己听到的是音乐还是天灾</h2>
+  <div class="card branch-kaiju branch-mark">
+    <p>把低频 drone、异常合唱、风压、怪兽呼吸、雷暴、频谱 texture 与传统乐器混合。Kaiju 越接近，音乐和 SFX 的界线越模糊。</p>
+  </div>
+  <div class="grid3">
+    <div class="card branch-kaiju branch-mark"><h3>Presence</h3><p>不出现主旋律，只让环境和音乐底层发生难以察觉的调性偏移。</p></div>
+    <div class="card branch-kaiju branch-mark"><h3>Reveal</h3><p>出现 Kaiju Motif，但可以非常慢、非常稀疏，避免传统 Boss 音乐。</p></div>
+    <div class="card branch-kaiju branch-mark"><h3>Phase</h3><p>Phase 改变不是“换歌”，而是增加新的频谱/和声/节奏规则。</p></div>
+  </div>
+</section>
+
+<section id="adaptive" class="searchable" data-tags="adaptive music vertical layering horizontal resequencing stems transition" data-branch="system">
+  <h2>10. 动态音乐架构：游戏音乐不是 Playlist</h2>
+  <p class="lead">本项目建议同时使用 Vertical Layering（垂直分层）和 Horizontal Resequencing（水平重组）。</p>
+  <div class="grid2">
+    <div class="card branch-system branch-mark"><h3>Vertical Layering</h3><p>同一段音乐同时准备 Atmosphere / Pulse / Percussion / Strings / Brass / Kaiju 等 stem。战况提高时加层，音乐不断但强度改变。</p></div>
+    <div class="card branch-system branch-mark"><h3>Horizontal Resequencing</h3><p>Intro → Loop A → Transition AB → Loop B → Climax → Outro，在小节边界决定下一段。</p></div>
+  </div>
+  <details open><summary>建议的 RTS 音乐状态空间</summary><div class="inside">
+    <p>Strategic Observation → Anomaly → Contact → Local Combat → High Intensity → Kaiju Presence → Crisis → Momentum Shift → Aftermath。状态不必一一对应不同歌曲，可以只改变 stem、调性层或段落。</p>
+  </div></details>
+  <div class="callout good"><b>真正值得做的参数：</b>CombatIntensity、KaijuThreat、HumanMomentum、Destruction、Weather。音乐系统读这些连续值，比读一个简单的 “IsBattle=true” 更适合你的 RTS。</div>
+</section>
+
+<section id="ue" class="searchable" data-tags="UE5.8 MetaSounds Quartz procedural music sample accurate" data-branch="system">
+  <h2>11. UE5.8：MetaSounds + Quartz</h2>
+  <div class="grid2">
+    <div class="card branch-system branch-mark"><h3>MetaSounds</h3><p>负责 stem 混合、filter、volume、随机 variation、程序化层和 gameplay 参数控制。Epic 5.8 已有官方 procedural music 教程。</p></div>
+    <div class="card branch-system branch-mark"><h3>Quartz</h3><p>负责 sample-accurate 的音乐时间调度，让 transition 在 beat / bar 上发生，而不是因为 Game Thread 帧波动错拍。</p></div>
+  </div>
+  <div class="links">
+    <a href="https://dev.epicgames.com/documentation/unreal-engine/creating-procedural-music-with-metasounds" target="_blank">UE5.8：Creating Procedural Music with MetaSounds</a>
+    <a href="https://dev.epicgames.com/documentation/unreal-engine/quartz-quick-start" target="_blank">UE5.8：Quartz Quick Start</a>
+    <a href="https://dev.epicgames.com/documentation/unreal-engine/metasounds-the-next-generation-sound-sources-in-unreal-engine" target="_blank">MetaSounds Overview</a>
+  </div>
+  <div class="gate"><b>运行时 Gate：</b>不要只在 REAPER 里判断音乐是否完成。必须在“玩家操作 + 战斗声效 + Kaiju + UI + 无线电”全部存在时试听，确认音乐不会掩盖信息层。</div>
+</section>
+
+<section id="qa" class="searchable" data-tags="QA loop rights copyright commercial license Suno Eleven Stable Audio">
+  <h2>12. QA、版权与入库</h2>
+  <div class="grid2">
+    <div class="card"><h3>技术 QA</h3><p>BPM/拍号记录、Loop seam、所有 stems 同长度同起点、响度、头尾静音、48kHz 项目规范、文件命名、版本号。</p></div>
+    <div class="card"><h3>来源 QA</h3><p>记录生成平台、订阅层、生成日期、输入来源、是否做了 MIDI/重编曲、使用的 sample library 和对应 license。</p></div>
+  </div>
+  <details open><summary>截至 2026-08-23 的几个重要许可事实</summary><div class="inside">
+    <p><b>Suno：</b>官方帮助文档明确 paid subscription 期间制作的新曲具有 commercial use rights，并明确举例可以用于 video games；但商业使用权不等于作品一定获得当地版权保护。其定价页已预告 2026-09-03 起 Pro/Premier 普通 song download 有月度数量限制，而 Premier 的 Studio 使用有单独政策。</p>
+    <p><b>Stable Audio 3.0：</b>官方称模型使用 fully licensed data 训练，并称用户拥有输出、可商业发行；Community License 对年收入低于 US$1M 的个人/组织提供免费商业使用路径。</p>
+    <p><b>Eleven Music：</b>当前 Model-Specific Terms 对 Self-Serve 明确排除 film / TV / radio / Studio Games；“Studio Games”定义包含商业化且在一个以上平台提供的游戏。要做最终多平台商业游戏音乐，不能默认使用普通 Self-Serve 授权。</p>
+    <p><b>Udio：</b>官方帮助中心目前仍明确写着 audio、video 和 stems 下载被禁用，所以不适合作为生产资产源。</p>
+    <p class="mini">本节是生产风险提示，不构成法律意见。发行前应根据当时条款重新核对。</p>
+  </div></details>
+</section>
+
+<section id="budget" class="searchable" data-tags="pricing 性价比 cost Suno Stable Audio REAPER">
+  <h2>13. 工具与性价比</h2>
+  <table>
+    <thead><tr><th>工具</th><th>当前公开信息快照</th><th>对你的价值</th><th>建议</th></tr></thead>
+    <tbody>
+      <tr><td><b>REAPER</b></td><td>Discounted license $60；年商业总收入不超过 $20k 等条件可用；许可覆盖升级到 8.99。</td><td class="rating">★★★★★</td><td>长期固定，音乐与 SFX 共用。</td></tr>
+      <tr><td><b>Suno Pro</b></td><td>官网当前年付折算 $8/月；2500 credits；paid 新曲有商业使用权。Studio 2.0 属于 Premier。</td><td class="rating">★★★★☆</td><td>只想生成/编辑一般草稿可 Pro；真正进入 Studio 2 工作流时再 Premier。</td></tr>
+      <tr><td><b>Suno Premier</b></td><td>官网当前年付折算 $24/月；10000 credits；包含 Suno Studio。</td><td class="rating">★★★★★ 创作月</td><td>集中做一批 soundtrack 时订 1–2 个月，而不是全年无脑订。</td></tr>
+      <tr><td><b>Stable Audio 3.0</b></td><td>Small / Medium 有开放权重路径；Community License 对 &lt;$1M 年收入提供免费商业使用。</td><td class="rating">★★★★★</td><td>长期保留为可控 backend；如果本地硬件允许，尤其值得。</td></tr>
+      <tr><td><b>Eleven Music</b></td><td>Self-Serve 有生成/下载套餐，但当前条款排除 Studio Games。</td><td class="rating">★★★☆☆ 原型</td><td>可做原型和比较，不作为默认最终发行音乐来源。</td></tr>
+      <tr><td><b>Udio</b></td><td>目前官方禁用下载。</td><td class="rating">★★☆☆☆ 生产</td><td>只用于灵感，不纳入正式资产管线。</td></tr>
+    </tbody>
+  </table>
+  <div class="callout good"><b>最低成本正式组合：</b>REAPER + 免费管弦乐库 + Stable Audio 3.0；需要高效探索的月份再开 Suno Premier。真正应该投资的是你的 Music Bible、统一 VST 音色和 UE 动态音乐系统，而不是长期同时订阅所有 AI 音乐平台。</div>
+</section>
+
+<section id="learn" class="searchable" data-tags="learning 学习 零基础 two weeks beginner">
+  <h2>14. 你的最小学习路线：边做第一套音乐边学</h2>
+  <p class="lead">不要把它当音乐学院课程。目标是尽快获得“听得懂、改得动、能进引擎”的能力。</p>
+  <div class="card">
+    <div class="lesson"><strong>第 1–2 天</strong><div>只认识 BPM、beat、bar、motif、stem、MIDI。找 3 首你喜欢的游戏音乐，尝试只用这些词描述。</div></div>
+    <div class="lesson"><strong>第 3–4 天</strong><div>用 Suno / Stable Audio 做第一个 Music Brief，生成不超过 8 个草稿；挑一个 Motif。</div></div>
+    <div class="lesson"><strong>第 5–7 天</strong><div>学 REAPER 的导入、切片、复制、fade、volume、MIDI piano roll、render。不要学完整混音课程。</div></div>
+    <div class="lesson"><strong>第 8–10 天</strong><div>把一个 AI 草稿拆成 4–6 stems；做 32 小节 loop；让 percussion stem 可以独立开关。</div></div>
+    <div class="lesson"><strong>第 11–14 天</strong><div>进入 UE：用 Quartz 在 bar 边界切段，用 MetaSounds 按 CombatIntensity 开关 stem。做到这一点，你已经真正开始做“游戏音乐”而不是“AI 歌曲”。</div></div>
+  </div>
+</section>
+
+<section id="resources" class="searchable" data-tags="resources tutorial Suno Stable Audio Reaper MetaSounds Quartz learning">
+  <h2>15. 官方资料与学习入口</h2>
+  <div class="resource-list">
+    <a class="resource" href="https://suno.com/blog/studio-2" target="_blank"><b>Suno Studio 2.0 官方介绍</b><small>MIDI、Chat Bar、automation、advanced stem separation。</small></a>
+    <a class="resource" href="https://help.suno.com/en/articles/13670529" target="_blank"><b>Suno Studio 2.0 帮助文档</b><small>适合第一次进入 Studio 前阅读。</small></a>
+    <a class="resource" href="https://stability.ai/guides/stable-audio-3-prompt-guide" target="_blank"><b>Stable Audio 3.0 Prompt Guide</b><small>composition、stems、audio-to-audio、inpainting。</small></a>
+    <a class="resource" href="https://stability.ai/license" target="_blank"><b>Stability AI License</b><small>正式发行前核对许可。</small></a>
+    <a class="resource" href="https://www.reaper.fm/videos.php" target="_blank"><b>REAPER 官方视频</b><small>只按需要学习编辑、MIDI、render、automation。</small></a>
+    <a class="resource" href="https://dev.epicgames.com/documentation/unreal-engine/creating-procedural-music-with-metasounds" target="_blank"><b>Epic：Procedural Music with MetaSounds</b><small>UE5.8 官方程序化音乐教程。</small></a>
+    <a class="resource" href="https://dev.epicgames.com/documentation/unreal-engine/quartz-quick-start" target="_blank"><b>Epic：Quartz Quick Start</b><small>理解 sample-accurate bar / beat 调度。</small></a>
+    <a class="resource" href="https://www.reddit.com/r/GameAudio/" target="_blank"><b>Reddit /r/GameAudio</b><small>关注真正的游戏音乐实现、middleware 和动态音乐讨论，而不只看 AI 生成器社区。</small></a>
+  </div>
+</section>
+
+<section id="glossary" class="searchable" data-tags="glossary 术语 music BPM bar chord motif stem MIDI ostinato drone cadence">
+  <h2>16. 中英术语表</h2>
+  <div class="card glossary">
+    <div><b>BPM</b> — Beats Per Minute，每分钟拍数，也就是音乐速度。</div>
+    <div><b>Beat</b> — 拍；音乐时间的基本脉冲。</div>
+    <div><b>Bar / Measure</b> — 小节；几拍组成一个重复的时间单位。</div>
+    <div><b>Time Signature</b> — 拍号，例如 4/4。</div>
+    <div><b>Key</b> — 调；音乐围绕哪个中心音组织。</div>
+    <div><b>Mode</b> — 调式；影响音乐的明暗、稳定和异质感。</div>
+    <div><b>Chord</b> — 和弦；多个音同时构成的和声单位。</div>
+    <div><b>Harmony</b> — 和声；多个音/和弦之间的关系和运动。</div>
+    <div><b>Motif</b> — 动机；短而可识别、可反复变形的音乐材料。</div>
+    <div><b>Theme</b> — 主题；通常比 motif 更长、更完整。</div>
+    <div><b>Ostinato</b> — 固定音型；不断重复的节奏或旋律型，很适合工业/军事音乐。</div>
+    <div><b>Drone</b> — 持续音/持续纹理；适合 Kaiju、环境和不稳定氛围。</div>
+    <div><b>Stem</b> — 分轨；鼓、弦、铜管、Atmosphere 等独立音频层。</div>
+    <div><b>MIDI</b> — 音符控制数据，不是录音。</div>
+    <div><b>Velocity</b> — MIDI 力度；通常影响音符响度/演奏感。</div>
+    <div><b>Register</b> — 音区；高音、中音、低音所在范围。</div>
+    <div><b>Cadence</b> — 终止式/句尾感；音乐产生“结束”或“停顿”的方式。</div>
+    <div><b>Loop</b> — 无缝循环。</div>
+    <div><b>Transition</b> — 转场段；连接不同音乐状态。</div>
+    <div><b>Vertical Layering</b> — 垂直分层；同一时间轴上加减 stems 改变强度。</div>
+    <div><b>Horizontal Resequencing</b> — 水平重组；在不同乐段之间按规则跳转。</div>
+    <div><b>Quartz</b> — UE 的 sample-accurate 音乐时间调度系统。</div>
+    <div><b>MetaSounds</b> — UE 原生 DSP / 程序化音频图系统。</div>
+    <div><b>Cue</b> — 一段特定用途的游戏音乐资产/音乐事件。</div>
+  </div>
+</section>
+
+<footer>
+  <p>版本 v1.0 · 基线日期 2026-08-23。AI 音乐平台的价格、下载政策和授权条款变化很快，正式发行前必须重新核对。稳定资产应是 Music Bible、Motif、MIDI、REAPER 工程、stems、transition、UE 参数接口与来源记录，而不是某个生成器里的单次 prompt/seed。</p>
+</footer>
+</main>
+</div>
+
+<script>
+const root=document.documentElement;
+const saved=localStorage.getItem('rts-music-theme'); if(saved) root.dataset.theme=saved;
+document.getElementById('theme').onclick=()=>{const n=root.dataset.theme==='light'?'dark':'light';root.dataset.theme=n;localStorage.setItem('rts-music-theme',n)};
+const search=document.getElementById('search'), searchable=[...document.querySelectorAll('.searchable')];
+search.addEventListener('input',()=>{const q=search.value.trim().toLowerCase();searchable.forEach(el=>{const t=(el.innerText+' '+(el.dataset.tags||'')).toLowerCase();el.classList.toggle('hidden-by-search',q&&!t.includes(q));});});
+const filterBtns=[...document.querySelectorAll('.filterbtn')];
+filterBtns.forEach(btn=>btn.onclick=()=>{const b=btn.dataset.filter;filterBtns.forEach(x=>x.classList.toggle('active',x===btn));document.querySelectorAll('[data-branch]').forEach(el=>el.classList.toggle('hidden-by-branch',b!=='all'&&el.dataset.branch!==b));});
+let expanded=false; document.getElementById('expand').onclick=e=>{expanded=!expanded;document.querySelectorAll('details').forEach(d=>d.open=expanded);e.currentTarget.textContent=expanded?'折叠':'展开';};
+const navLinks=[...document.querySelectorAll('#nav a')], secs=navLinks.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const obs=new IntersectionObserver(entries=>entries.forEach(en=>{if(en.isIntersecting)navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+en.target.id));}),{rootMargin:'-18% 0 -72% 0'}); secs.forEach(s=>obs.observe(s));
+
+function makeBrief(){
+  const scene=document.getElementById('fScene').value.trim();
+  const intensity=document.getElementById('fIntensity').value.trim();
+  const emotion=document.getElementById('fEmotion').value.trim();
+  const want=document.getElementById('fWant').value.trim();
+  const avoid=document.getElementById('fAvoid').value.trim();
+  const use=document.getElementById('fUse').value;
+  const notes=document.getElementById('fNotes').value.trim();
+  const txt=`GAME MUSIC BRIEF
+
+Gameplay State / 场景：
+${scene}
+
+Purpose / 用途：
+${use}
+
+Intensity / 强度：
+${intensity}/10
+
+Player Emotion / 玩家应感到：
+${emotion}
+
+Desired Sound Palette / 希望声音：
+${want}
+
+Avoid / 明确禁止：
+${avoid}
+
+Production Notes / 生产说明：
+${notes}
+
+Please translate this creative brief into:
+1. recommended BPM range;
+2. meter;
+3. tonal / modal direction;
+4. rhythm and harmonic behavior;
+5. instrumentation;
+6. a 4–8 note motif concept;
+7. 4/8/16/32-bar structure;
+8. stems needed for vertical layering;
+9. transitions needed for interactive game music;
+10. a concise generation prompt, without referencing living artists or copyrighted tracks.`;
+  document.getElementById('briefOut').textContent=txt;
+}
+document.getElementById('makeBrief').onclick=makeBrief;
+document.getElementById('copyBrief').onclick=async()=>{const t=document.getElementById('briefOut').textContent;if(!t)makeBrief();await navigator.clipboard.writeText(document.getElementById('briefOut').textContent);document.getElementById('copyBrief').textContent='已复制';setTimeout(()=>document.getElementById('copyBrief').textContent='复制',1200);};
+makeBrief();
+</script>
+</body>
+</html>

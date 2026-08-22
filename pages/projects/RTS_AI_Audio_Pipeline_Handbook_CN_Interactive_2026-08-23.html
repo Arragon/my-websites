@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>RTS AI 音效设计与生产管线手册｜2026-08-23</title>
+<style>
+:root{
+  --bg:#0b1016;--panel:#111925;--panel2:#172130;--text:#eaf0f7;--muted:#9cabbc;
+  --line:#2a3547;--accent:#68a6ff;--accent2:#7fe2bd;--warn:#f7c865;--danger:#ff8585;--good:#89e69a;
+  --human:#6ea8ff;--kaiju:#b187ff;--world:#74d6a3;--chip:#1c2636;--shadow:0 10px 30px rgba(0,0,0,.18);
+}
+html[data-theme="light"]{
+  --bg:#f4f6f9;--panel:#fff;--panel2:#f7f9fc;--text:#1c2632;--muted:#627286;
+  --line:#dce4ee;--accent:#336ed0;--accent2:#147d65;--warn:#9c6a00;--danger:#b93d3d;--good:#2c8141;
+  --human:#306fd1;--kaiju:#7b51c4;--world:#2f8c5a;--chip:#edf2f8;--shadow:0 8px 24px rgba(30,50,80,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.72 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+button,input{font:inherit}
+.topbar{position:sticky;top:0;z-index:50;display:flex;gap:9px;align-items:center;padding:10px 18px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.brand{font-weight:800;white-space:nowrap}
+.search{flex:1;max-width:600px;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px 11px}
+.iconbtn,.filterbtn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:9px;padding:7px 10px;cursor:pointer}
+.iconbtn:hover,.filterbtn:hover,.filterbtn.active{border-color:var(--accent);background:var(--chip)}
+.layout{display:grid;grid-template-columns:265px minmax(0,1fr);max-width:1510px;margin:auto}
+.sidebar{position:sticky;top:54px;height:calc(100vh - 54px);overflow:auto;padding:20px 16px;border-right:1px solid var(--line)}
+.sidebar .meta{font-size:12px;color:var(--muted);margin-bottom:14px}
+.nav a{display:block;color:var(--muted);padding:6px 9px;border-left:2px solid transparent;border-radius:0 8px 8px 0}
+.nav a:hover,.nav a.active{color:var(--text);background:var(--chip);border-left-color:var(--accent);text-decoration:none}
+.main{padding:28px clamp(18px,4vw,58px) 80px;max-width:1190px}
+.hero{padding:30px;border:1px solid var(--line);border-radius:18px;background:
+radial-gradient(circle at 82% 10%,color-mix(in srgb,var(--accent) 18%,transparent),transparent 32%),
+linear-gradient(145deg,var(--panel),var(--panel2));box-shadow:var(--shadow)}
+.hero h1{font-size:clamp(28px,4vw,45px);line-height:1.14;margin:0 0 12px}
+.hero p{max-width:900px;color:var(--muted);font-size:16px}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.badge{padding:5px 9px;border:1px solid var(--line);border-radius:999px;background:var(--chip);font-size:12px;color:var(--muted)}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0 4px}
+.summary>div{padding:14px;background:color-mix(in srgb,var(--panel2) 90%,transparent);border:1px solid var(--line);border-radius:12px}
+.summary b{display:block;margin-bottom:5px}
+section{scroll-margin-top:72px;margin-top:34px}
+h2{font-size:26px;margin:0 0 12px}h3{font-size:19px;margin:0 0 9px}
+.lead{color:var(--muted);max-width:930px}
+.pipeline{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--panel);margin:16px 0}
+.stagechip{display:inline-flex;align-items:center;padding:7px 10px;background:var(--chip);border:1px solid var(--line);border-radius:10px}.arrow{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:17px;box-shadow:var(--shadow)}
+.card .kicker{font-size:12px;color:var(--accent2);text-transform:uppercase;letter-spacing:.07em}.mini{font-size:13px;color:var(--muted)}
+.branch-human{--branch:var(--human)}.branch-kaiju{--branch:var(--kaiju)}.branch-world{--branch:var(--world)}
+.branch-mark{border-top:3px solid var(--branch)}
+.callout{border-left:4px solid var(--accent);padding:12px 15px;background:var(--panel);border-radius:0 12px 12px 0;margin:14px 0}
+.callout.good{border-left-color:var(--good)}.callout.warn{border-left-color:var(--warn)}.callout.danger{border-left-color:var(--danger)}
+details{border:1px solid var(--line);background:var(--panel);border-radius:12px;margin:10px 0;overflow:hidden}
+summary{cursor:pointer;padding:12px 14px;font-weight:700;background:var(--panel2)}details .inside{padding:5px 14px 14px}
+table{width:100%;border-collapse:collapse;margin:12px 0 18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{padding:10px 11px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}th{background:var(--panel2);font-size:13px}tr:last-child td{border-bottom:0}
+.tag{display:inline-block;font-size:11px;padding:2px 6px;border-radius:6px;background:var(--chip);border:1px solid var(--line);margin:1px}
+.rating{white-space:nowrap;color:var(--warn)}
+.term{border-bottom:1px dotted var(--accent);cursor:help}
+.steps{counter-reset:step}.step{position:relative;padding:14px 15px 14px 54px;border:1px solid var(--line);border-radius:12px;background:var(--panel);margin:9px 0}
+.step:before{counter-increment:step;content:counter(step);position:absolute;left:14px;top:13px;width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:white;font-weight:800}
+.gate{border:1px solid color-mix(in srgb,var(--good) 55%,var(--line));background:color-mix(in srgb,var(--good) 7%,var(--panel));padding:12px 14px;border-radius:12px;margin:10px 0}
+.stop{border:1px solid color-mix(in srgb,var(--warn) 55%,var(--line));background:color-mix(in srgb,var(--warn) 7%,var(--panel));padding:12px 14px;border-radius:12px;margin:10px 0}
+.links{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.links a{padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--chip);font-size:12px}
+.toolrow{display:grid;grid-template-columns:170px 1fr 1fr 110px;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}.toolrow:last-child{border-bottom:0}.toolname{font-weight:800}
+.pro{color:var(--good)}.con{color:var(--danger)}
+.resource-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.resource{padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.resource small{display:block;color:var(--muted);margin-top:2px}
+.glossary{columns:2;column-gap:24px}.glossary div{break-inside:avoid;margin-bottom:10px}.glossary b{color:var(--accent2)}
+.hidden-by-search,.hidden-by-branch{display:none!important}
+footer{margin-top:40px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:18px}
+@media(max-width:980px){.layout{grid-template-columns:1fr}.sidebar{display:none}.main{padding:20px 16px 60px}.summary,.grid3,.grid2{grid-template-columns:1fr}.toolrow{grid-template-columns:1fr}.resource-list{grid-template-columns:1fr}.glossary{columns:1}.brand{display:none}}
+@media print{.topbar,.sidebar{display:none}.layout{display:block}.main{max-width:none;padding:0}.card,details{box-shadow:none;break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">RTS AI Audio Pipeline</div>
+  <input id="search" class="search" placeholder="搜索：例如“Kaiju / 炮声 / MetaSounds / REAPER / 距离层”">
+  <button class="filterbtn active" data-filter="all">全部</button>
+  <button class="filterbtn" data-filter="human">Human</button>
+  <button class="filterbtn" data-filter="kaiju">Kaiju</button>
+  <button class="filterbtn" data-filter="world">战场/环境</button>
+  <button id="theme" class="iconbtn">◐</button>
+  <button id="expand" class="iconbtn">展开</button>
+</div>
+
+<div class="layout">
+<aside class="sidebar">
+  <div class="meta">版本 v1.0 · 2026-08-23<br>单人 RTS 音频生产基线</div>
+  <nav class="nav" id="nav">
+    <a href="#overview">0. 先看结论</a>
+    <a href="#stage1">1. Sound Bible</a>
+    <a href="#stage2">2. 原始素材获取</a>
+    <a href="#stage3">3. AI 声音生成 / 重构</a>
+    <a href="#stage4">4. REAPER 分层设计</a>
+    <a href="#stage5">5. Human 音效管线</a>
+    <a href="#stage6">6. Hero Kaiju 音效</a>
+    <a href="#stage7">7. 变体 / 距离 / 环境</a>
+    <a href="#stage8">8. 自动 QA 与入库</a>
+    <a href="#stage9">9. UE5.8 MetaSounds</a>
+    <a href="#stage10">10. Battlefield Acoustic</a>
+    <a href="#budget">11. 工具与性价比</a>
+    <a href="#resources">12. 学习与讨论</a>
+    <a href="#glossary">13. 中英术语表</a>
+  </nav>
+</aside>
+
+<main class="main">
+<header class="hero" id="overview">
+  <h1>AI 辅助音效设计 / 生产管线手册</h1>
+  <p>适用于“大规模现代/近未来人类部队 vs Hero Kaiju”的单人 RTS。核心思想不是让 AI 一键生成所有 WAV，而是用真实录音和专业音效库提供物理真实性，用 AI 做重构、变体和难以录制的声音，再通过 REAPER 分层设计，最终在 UE5.8 中用 MetaSounds、Audio Modulation 和声学 LOD 运行时重组。</p>
+  <div class="badges">
+    <span class="badge">REAPER 7.79</span><span class="badge">UE 5.8</span><span class="badge">MetaSounds</span>
+    <span class="badge">Human：工业与物理真实</span><span class="badge">Kaiju：生物 × 天灾</span>
+    <span class="badge">AI = 加速器，不是最终听感裁判</span>
+  </div>
+  <div class="summary">
+    <div><b>Human</b><span class="mini">真实枪炮、发动机、机械瞬态作为锚点；AI 主要负责变体、尾声、特殊层和难以录制的尺度夸张。</span></div>
+    <div><b>Kaiju</b><span class="mini">声音应像“整个环境一起发声”，由 vocal、body、sub、air、structural、organic 多层组成。</span></div>
+    <div><b>Runtime</b><span class="mini">不要为每个单位播放完整 WAV。远距离与大规模战斗应聚合成声学簇和战场声场。</span></div>
+  </div>
+</header>
+
+<section class="searchable" data-tags="overview pipeline 总览 流程">
+  <h2>一张图看完整管线</h2>
+  <div class="pipeline">
+    <a class="stagechip" href="#stage1">① Sound Bible</a><span class="arrow">→</span>
+    <a class="stagechip" href="#stage2">② 录音 / 音效库</a><span class="arrow">→</span>
+    <a class="stagechip" href="#stage3">③ AI 生成 / 重构</a><span class="arrow">→</span>
+    <a class="stagechip" href="#stage4">④ REAPER 分层</a><span class="arrow">→</span>
+    <a class="stagechip" href="#stage7">⑤ 变体 / 距离层</a><span class="arrow">→</span>
+    <a class="stagechip" href="#stage8">⑥ 自动 QA</a><span class="arrow">→</span>
+    <a class="stagechip" href="#stage9">⑦ UE MetaSounds</a><span class="arrow">→</span>
+    <a class="stagechip" href="#stage10">⑧ 战场声学</a>
+  </div>
+  <div class="callout good"><b>一句话原则：</b>少量高质量“声音原子” + 分层 + 变体 + 参数化 + 距离聚合，比堆几万个固定成品 WAV 更适合 RTS。</div>
+</section>
+
+<section id="stage1" class="searchable" data-tags="Sound Bible 声音圣经 concept audio identity">
+  <h2>1. Sound Bible：先定义“声音为什么这样”</h2>
+  <p class="lead">重要单位先写 3–8 行声音定义，不要直接打开生成器抽卡。Sound Bible 是 Concept Art Bible 的声音版本。</p>
+  <div class="grid3">
+    <div class="card branch-human branch-mark" data-branch="human"><div class="kicker">Human</div><h3>工业逻辑</h3><p>声音越听越能理解结构：动力、传动、机构、压力、材料和武器动作都应有物理来源。</p></div>
+    <div class="card branch-kaiju branch-mark" data-branch="kaiju"><div class="kicker">Kaiju</div><h3>认知模糊</h3><p>声音应该让玩家难以判断这是生物、雷暴、地震、巨型结构还是远方地形本身在共振。</p></div>
+    <div class="card branch-world branch-mark" data-branch="world"><div class="kicker">World</div><h3>战场作为声源</h3><p>远方炮火、飞机、风雨、建筑共振和 Kaiju 威胁应形成连续的“战场状态”，而不是零散事件。</p></div>
+  </div>
+  <details open><summary>Sound Bible 模板</summary><div class="inside">
+    <p><b>声源身份：</b>它是什么、尺度多大、主要物理结构是什么。<br>
+    <b>近距离：</b>玩家靠近时应听到哪些具体机械/身体细节。<br>
+    <b>中距离：</b>哪些层开始融合。<br>
+    <b>远距离：</b>最后剩下低频、尾声、气流还是环境响应。<br>
+    <b>动态参数：</b>RPM、Throttle、Damage、Phase、Weather、Distance 等会怎样改变声音。<br>
+    <b>禁止项：</b>哪些常见“电影化套路”不允许出现。</p>
+  </div></details>
+  <div class="gate"><b>Gate：</b>如果还不能用文字解释“这个声音由哪些物理事件组成”，就不要开始做成品音效。</div>
+</section>
+
+<section id="stage2" class="searchable" data-tags="recording library Sonniss Soundly BOOM Foley 素材 录音">
+  <h2>2. 原始素材获取：真实素材仍是物理真实性的锚点</h2>
+  <p class="lead">2026 年 AI 音效已经很强，但现代武器、发动机、机械瞬态和复杂 Foley 仍然非常受益于真实录音。最佳实践是混合来源。</p>
+  <details open><summary>推荐素材来源</summary><div class="inside">
+    <table>
+      <thead><tr><th>来源</th><th>适合</th><th>优点</th><th>缺点</th><th>定位</th></tr></thead>
+      <tbody>
+        <tr><td><b>自己录</b></td><td>金属、门、链条、呼吸、撞击、嘴拟音、摩擦</td><td>完全可控；可直接表演节奏和力度。</td><td>真正军械/大型机械录不到。</td><td><span class="tag">结构参考</span></td></tr>
+        <tr><td><b>Sonniss GDC</b></td><td>通用高质量游戏音效</td><td>大量免费专业素材；非常适合前期建立库。</td><td>搜索和管理需要自己做好。</td><td><span class="tag">免费主力</span></td></tr>
+        <tr><td><b>Soundly</b></td><td>搜索、管理、快速试听</td><td>自然语言搜索方便；适合做项目 Sound Library Hub。</td><td>高级库与功能依赖订阅。</td><td><span class="tag">素材中枢</span></td></tr>
+        <tr><td><b>BOOM Library</b></td><td>枪炮、坦克、喷气、怪兽、破坏</td><td>专业游戏/影视级素材，分类与设计成熟。</td><td>贵；前期没必要全买。</td><td><span class="tag">正式生产升级</span></td></tr>
+      </tbody>
+    </table>
+    <div class="links">
+      <a href="https://gdc.sonniss.com/" target="_blank">Sonniss GDC 免费包</a>
+      <a href="https://getsoundly.com/" target="_blank">Soundly</a>
+      <a href="https://www.boomlibrary.com/" target="_blank">BOOM Library</a>
+    </div>
+  </div></details>
+  <div class="callout warn"><b>不要：</b>因为 AI 能生成，就完全放弃真实录音。对枪炮瞬态、发动机和机械动作，真实录音仍是最便宜的“可信度来源”。</div>
+</section>
+
+<section id="stage3" class="searchable" data-tags="AI SFX Stable Audio 3 Adobe Firefly ElevenLabs Krotos audio to audio inpainting">
+  <h2>3. AI 生成 / 重构：四类工具，四种角色</h2>
+  <p class="lead">当前最优方向已经不是纯 Text-to-SFX，而是参考音频、audio-to-audio、inpainting、表演引导和批量 API。</p>
+  <details open><summary>工具比较</summary><div class="inside">
+    <table>
+      <thead><tr><th>工具</th><th>最适合</th><th>优点</th><th>短板</th><th>本项目定位</th></tr></thead>
+      <tbody>
+        <tr><td><b>Stable Audio 3.0</b></td><td>复杂重构、纹理、环境、Hero 声音实验</td><td>Audio-to-Audio、Inpainting、Continuation、DAW 插件；更接近声音设计工作流。</td><td>需要理解音频结构；不是简单“一键好听”。</td><td><span class="tag">长期 AI 主工作台</span></td></tr>
+        <tr><td><b>Adobe Firefly SFX</b></td><td>“我能表演节奏，但录不出真正声源”</td><td>可以用语音/嘴拟音/参考声音引导 timing 与 energy。</td><td>更适合结构控制，不是专业武器库替代品。</td><td><span class="tag">Foley / Timing</span></td></tr>
+        <tr><td><b>ElevenLabs SFX v2</b></td><td>批量 one-shot、loop、UI、环境变体</td><td>时长控制、seamless loop、API、生成速度快。</td><td>复杂 Hero 声音仍需分层设计。</td><td><span class="tag">批量生产</span></td></tr>
+        <tr><td><b>Krotos</b></td><td>武器、车辆、怪兽、Foley</td><td>Weaponiser / Igniter / Dehumaniser / Reformer 都是专业声音设计工具，不只是生成器。</td><td>成本较高；需要学习。</td><td><span class="tag">正式生产专业层</span></td></tr>
+      </tbody>
+    </table>
+    <div class="links">
+      <a href="https://stability.ai/stable-audio" target="_blank">Stable Audio</a>
+      <a href="https://www.adobe.com/products/firefly/features/sound-effect-generator.html" target="_blank">Adobe Firefly Sound Effects</a>
+      <a href="https://elevenlabs.io/sound-effects" target="_blank">ElevenLabs Sound Effects</a>
+      <a href="https://www.krotosaudio.com/" target="_blank">Krotos Audio</a>
+    </div>
+  </div></details>
+
+  <div class="steps">
+    <div class="step"><b>先生成“层”，不要生成“最终事件”。</b> 例如炮声分别生成 shockwave、distant tail、metal recoil、低频甜味层。</div>
+    <div class="step"><b>优先 reference audio。</b> 你可以自己用嘴、金属、鼓、门等表演 timing，再让 AI 重解释成超大尺度声源。</div>
+    <div class="step"><b>每个关键层保留 4–12 个变体。</b> RTS 中重复播放比单次质量更容易暴露问题。</div>
+  </div>
+</section>
+
+<section id="stage4" class="searchable" data-tags="REAPER DAW layer mixing render matrix scripting Lua batch">
+  <h2>4. REAPER：把它当成音频版 Blender</h2>
+  <p class="lead">所有来源最终进入同一个 DAW（数字音频工作站）。当前建议锁 REAPER 7.79：轻、稳定、脚本化强，特别适合批量游戏音效。</p>
+  <div class="grid2">
+    <div class="card"><h3>为什么不是“生成完直接进 UE”</h3><p>你仍然需要切片、对齐 transient、EQ、压缩、pitch/formant、layer、fade、loop、响度规范和变体导出。</p></div>
+    <div class="card"><h3>为什么 REAPER 适合单人</h3><p>Region Render Matrix、批量导出、Lua/Python/EEL 脚本、低价格，非常适合一口气处理几十到几百个 SFX。</p></div>
+  </div>
+  <details open><summary>推荐的 REAPER Project 结构</summary><div class="inside">
+    <p><b>01_SOURCE_REAL</b> — 真实录音 / 音效库；<br>
+    <b>02_SOURCE_AI</b> — AI 生成；<br>
+    <b>03_LAYERS</b> — 各层编辑；<br>
+    <b>04_MASTER_EVENTS</b> — 完整近距参考事件；<br>
+    <b>05_DISTANCE</b> — 中/远距层；<br>
+    <b>06_VARIATIONS</b> — 变体；<br>
+    <b>07_EXPORT</b> — 引擎输出。</p>
+    <div class="links">
+      <a href="https://www.reaper.fm/" target="_blank">REAPER</a>
+      <a href="https://www.reaper.fm/sdk/reascript/reascripthelp.html" target="_blank">ReaScript API</a>
+    </div>
+  </div></details>
+</section>
+
+<section id="stage5" class="searchable" data-tags="Human weapons vehicle tank artillery jet industrial">
+  <h2>5. Human 音效管线：物理核心 + 工业细节 + AI 扩展</h2>
+  <div class="card branch-human branch-mark" data-branch="human">
+    <h3>例：120mm 坦克炮</h3>
+    <p>不要做一个 <code>Cannon_01.wav</code>。拆成 Mechanical / Muzzle Transient / Explosion Body / Sub / Shockwave / Environmental Tail / Distant Tail。</p>
+  </div>
+  <div class="grid3">
+    <div class="card branch-human branch-mark" data-branch="human"><h3>真实核心</h3><p>枪炮瞬态、金属机构、发动机、履带、喷气等优先真实库。</p></div>
+    <div class="card branch-human branch-mark" data-branch="human"><h3>AI 扩展</h3><p>生成夸张低频、环境尾声、特殊机械层、罕见尺度感和变体。</p></div>
+    <div class="card branch-human branch-mark" data-branch="human"><h3>运行时</h3><p>近距保留机械层，中距减少瞬态细节，远距主要剩低频、尾声和环境反射。</p></div>
+  </div>
+  <div class="stop"><b>停止规则：</b>玩家在正常 RTS 战斗距离已经能凭声音区分“这是什么武器/载具、距离大概多少、威胁有多大”，就不要继续为近贴镜头打磨无意义细节。</div>
+</section>
+
+<section id="stage6" class="searchable" data-tags="Kaiju roar creature monster Dehumaniser body sub weather organic">
+  <h2>6. Hero Kaiju 音效：不要做“一个吼叫文件”</h2>
+  <p class="lead">怪兽声音应该像整个环境一起发生变化，而不是一只普通动物被降调。</p>
+  <div class="grid3">
+    <div class="card branch-kaiju branch-mark" data-branch="kaiju"><h3>Vocal Core</h3><p>真人/动物的呼吸、声带和表演节奏，提供“活物”基础。</p></div>
+    <div class="card branch-kaiju branch-mark" data-branch="kaiju"><h3>Body / Sub</h3><p>巨型空腔、管道、金属箱、鲸类、低频共鸣，表达规模与身体质量。</p></div>
+    <div class="card branch-kaiju branch-mark" data-branch="kaiju"><h3>Air / Structural</h3><p>风压、雷暴、建筑和玻璃共振，让玩家感觉不是“怪兽在叫”，而是环境被迫响应。</p></div>
+  </div>
+  <details open><summary>推荐工具链</summary><div class="inside">
+    <p>你/演员表演 → Krotos Dehumaniser 或 Stable Audio Audio-to-Audio → 加动物/天气/结构素材 → REAPER 分层 → Sub 与空气层单独控制 → UE 中再根据 Phase / Distance / Weather 参数重组。</p>
+  </div></details>
+  <div class="callout danger"><b>禁止默认套路：</b>“老虎吼叫降调 2 个八度”“加大量失真就是巨大”“所有 Kaiju 都有同一种 Hollywood roar”。</div>
+</section>
+
+<section id="stage7" class="searchable" data-tags="variation distance acoustic LOD environment tail cluster randomization">
+  <h2>7. 变体、距离与环境：为 RTS 做 Acoustic LOD</h2>
+  <p class="lead"><span class="term" title="Acoustic LOD：按距离、屏幕重要性和单位规模减少声音细节的系统">Acoustic LOD（声学细节层级）</span> 是这类 RTS 的核心系统之一。</p>
+  <div class="grid3">
+    <div class="card"><h3>近距离</h3><p>完整机械 / body / transient / Foley；高辨识度。</p></div>
+    <div class="card"><h3>中距离</h3><p>减少微小机构，突出主体与早期反射；同类单位开始聚合。</p></div>
+    <div class="card"><h3>远距离</h3><p>不再逐单位播放。转成炮兵连、装甲集群、空战区域、Kaiju 威胁等“声学簇”。</p></div>
+  </div>
+  <div class="callout good"><b>典型例子：</b>5 公里外 30 辆坦克开火，不应播放 30 个完整 cannon event，而是根据射击密度生成一个 Distant Armor Battle Cluster。</div>
+</section>
+
+<section id="stage8" class="searchable" data-tags="QA LUFS peak DC offset loop seam sample rate naming metadata automation">
+  <h2>8. 自动 QA 与入库：机器管技术，人管“听起来对不对”</h2>
+  <div class="steps">
+    <div class="step"><b>技术检查：</b>Peak、响度、DC offset、静音、Loop seam、采样率、声道、时长、频谱异常。</div>
+    <div class="step"><b>命名：</b>统一生成 <code>SFX_WPN_Tank120_Close_Body_A_01.wav</code> 一类名字。</div>
+    <div class="step"><b>Metadata：</b>Category / Distance / Layer / Variation / Loop / Priority / Source / License。</div>
+    <div class="step"><b>试听 Gate：</b>最后由你在游戏镜头与战斗密度下判断，而不是只在耳机里 solo 听文件。</div>
+  </div>
+  <div class="gate"><b>必须人工批准：</b>Hero Kaiju 主发声、标志性超级武器、菜单/战斗最常重复听到的声音家族。</div>
+</section>
+
+<section id="stage9" class="searchable" data-tags="UE5.8 MetaSounds Audio Modulation middleware FMOD Wwise runtime">
+  <h2>9. UE5.8：优先原生 MetaSounds + Audio Modulation</h2>
+  <p class="lead">现阶段单人项目不建议为了“行业标准感”过早引入 FMOD/Wwise。先把 UE 原生系统吃透，减少依赖。</p>
+  <div class="grid2">
+    <div class="card"><h3>MetaSounds</h3><p>样本级 DSP 图，可以根据 RPM、Throttle、Damage、Distance、Phase 等实时驱动 loop、pitch、filter、volume 和随机化。</p></div>
+    <div class="card"><h3>Audio Modulation</h3><p>用 Control Bus 管理 SFX / Weapons / Vehicles / Kaiju / Ambience / Music 的全局动态混音。</p></div>
+  </div>
+  <details open><summary>什么时候再考虑 Wwise / FMOD？</summary><div class="inside">
+    <p>当项目已经有非常复杂的音乐逻辑、多人音频团队、跨平台声音组织需求，或者 UE 原生工具真的成为瓶颈时再评估。FMOD 2.03 官方 UE 支持目前主要列到 5.7；Wwise 2025.1.x 已出现 UE5.8 preliminary compatibility，但对单人项目来说仍然意味着额外集成与维护成本。</p>
+    <div class="links">
+      <a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/metasounds-in-unreal-engine" target="_blank">Epic MetaSounds</a>
+      <a href="https://dev.epicgames.com/documentation/unreal-engine/audio-modulation-quick-start-guide" target="_blank">Epic Audio Modulation</a>
+      <a href="https://www.fmod.com/docs/2.03/unreal/welcome.html" target="_blank">FMOD Unreal Docs</a>
+      <a href="https://www.audiokinetic.com/en/public-library/" target="_blank">Wwise Documentation</a>
+    </div>
+  </div></details>
+</section>
+
+<section id="stage10" class="searchable" data-tags="Battlefield Acoustic Simulation 战场 声学 参数 cluster intensity ambience world">
+  <h2>10. Battlefield Acoustic Simulation：让“战场本身”成为一个声源</h2>
+  <p class="lead">这是最值得为本项目专门开发的声音系统。战场维护几个宏观声学状态，MetaSounds 根据玩家摄像机和世界状态生成连续声场。</p>
+  <div class="grid3">
+    <div class="card branch-world branch-mark" data-branch="world"><h3>Battle Intensity</h3><p>局部交战密度与总体噪声底。</p></div>
+    <div class="card branch-world branch-mark" data-branch="world"><h3>Artillery / Armor / Air</h3><p>按战场空间区域聚合不同兵种活动。</p></div>
+    <div class="card branch-world branch-mark" data-branch="world"><h3>Kaiju Threat / Weather</h3><p>怪兽出现前就用低频、大气和结构共振改变环境声。</p></div>
+  </div>
+  <div class="callout good"><b>目标体验：</b>玩家还没看见 20 公里外的 Kaiju，就先从低频大气噪声、玻璃共振和异常雷声知道“某个巨大东西正在靠近”。</div>
+</section>
+
+<section id="budget" class="searchable" data-tags="pricing cost 性价比 Reaper Krotos Stable Audio ElevenLabs Soundly BOOM">
+  <h2>11. 工具与性价比建议</h2>
+  <table>
+    <thead><tr><th>工具</th><th>性价比</th><th>建议买法</th></tr></thead>
+    <tbody>
+      <tr><td><b>Sonniss GDC</b></td><td class="rating">★★★★★</td><td>先全部利用免费素材，不急着买大库。</td></tr>
+      <tr><td><b>REAPER</b></td><td class="rating">★★★★★</td><td>长期固定 DCC 中枢；个人/小商业 discounted license 价格非常低。</td></tr>
+      <tr><td><b>Stable Audio</b></td><td class="rating">★★★★★</td><td>作为长期 AI 生成/重构主工具；本地/开放路线也值得保留。</td></tr>
+      <tr><td><b>ElevenLabs SFX</b></td><td class="rating">★★★★☆</td><td>需要批量 one-shot、loop、API 时使用；不必拿它做所有 Hero 声音。</td></tr>
+      <tr><td><b>Adobe Firefly SFX</b></td><td class="rating">★★★★☆</td><td>有“表演引导”需求时很有价值，尤其 Foley 和动作节奏。</td></tr>
+      <tr><td><b>Krotos Collection</b></td><td class="rating">★★★★★ 正式制作期</td><td>进入正式武器/车辆/Kaiju 声音生产后再买，前期可不承担订阅。</td></tr>
+      <tr><td><b>Soundly</b></td><td class="rating">★★★★☆</td><td>素材量开始变大时再升级，主要价值是搜索和管理效率。</td></tr>
+      <tr><td><b>BOOM Library</b></td><td class="rating">★★★★★ 特定资产</td><td>按项目真正缺口购买，不建议一开始囤库。</td></tr>
+    </tbody>
+  </table>
+  <div class="callout good"><b>最低成本组合：</b>Sonniss + 自己录音 + REAPER + Stable Audio / ElevenLabs 按需 + UE MetaSounds。等第一只 Hero Kaiju 和正式武器声音开始时，再上 Krotos 与专业 BOOM 库。</div>
+</section>
+
+<section id="resources" class="searchable" data-tags="tutorial learn community Reddit GameAudio MetaSounds Krotos REAPER">
+  <h2>12. 学习、官方资料与社区讨论</h2>
+  <div class="resource-list">
+    <a class="resource" href="https://stability.ai/guides/stable-audio-3-prompt-guide" target="_blank"><b>Stable Audio 3 Prompt / Workflow Guide</b><small>理解文本、参考音频和分层生成。</small></a>
+    <a class="resource" href="https://elevenlabs.io/docs/overview/capabilities/sound-effects" target="_blank"><b>ElevenLabs Sound Effects Docs</b><small>API、时长、loop 和批量工作流。</small></a>
+    <a class="resource" href="https://www.krotosaudio.com/tutorials/" target="_blank"><b>Krotos Tutorials</b><small>Weaponiser、Igniter、Dehumaniser、Reformer 实战。</small></a>
+    <a class="resource" href="https://www.reaper.fm/videos.php" target="_blank"><b>REAPER 官方视频</b><small>基础编辑、路由、渲染与自动化。</small></a>
+    <a class="resource" href="https://dev.epicgames.com/documentation/en-us/unreal-engine/metasounds-in-unreal-engine" target="_blank"><b>Epic MetaSounds Documentation</b><small>UE 原生程序化音频核心资料。</small></a>
+    <a class="resource" href="https://dev.epicgames.com/documentation/unreal-engine/audio-modulation-overview" target="_blank"><b>Epic Audio Modulation</b><small>全局控制总线、混音和参数系统。</small></a>
+    <a class="resource" href="https://www.reddit.com/r/GameAudio/" target="_blank"><b>Reddit /r/GameAudio</b><small>游戏音频从业者讨论 middleware、实现、作品集和工作流。</small></a>
+    <a class="resource" href="https://www.youtube.com/@AkashThakkarAudio" target="_blank"><b>Akash Thakkar</b><small>游戏音效设计与实现的高质量 YouTube 频道。</small></a>
+  </div>
+</section>
+
+<section id="glossary" class="searchable" data-tags="glossary 术语 LUFS transient Foley loop reverb convolution middleware">
+  <h2>13. 常用英文术语中文注释</h2>
+  <div class="card glossary">
+    <div><b>SFX</b> — Sound Effects，音效。</div>
+    <div><b>DAW</b> — Digital Audio Workstation，数字音频工作站，例如 REAPER。</div>
+    <div><b>Foley</b> — 拟音；通过表演、物体和录音重建动作声音。</div>
+    <div><b>Transient</b> — 瞬态；一个声音最前面非常短、非常有识别力的冲击部分。</div>
+    <div><b>Body</b> — 主体；声音中承载主要音色和力量感的部分。</div>
+    <div><b>Tail</b> — 尾声；主体之后的残响、环境反射和衰减。</div>
+    <div><b>Sub</b> — 超低频层；常用于巨大质量感，但必须控制响度与播放设备兼容。</div>
+    <div><b>Sweetener</b> — 甜味层；为了增强冲击、质感或科幻感而额外加入的设计层。</div>
+    <div><b>Audio-to-Audio</b> — 音频到音频；用已有声音作为结构/内容参考重新生成。</div>
+    <div><b>Inpainting</b> — 局部重生成；只修改一段音频中的选定区域。</div>
+    <div><b>Loop</b> — 循环声音；首尾无缝连接，可持续播放。</div>
+    <div><b>Convolution</b> — 卷积处理；可用脉冲响应模拟空间、设备或共鸣特性。</div>
+    <div><b>Formant</b> — 共振峰；影响“声音像多大/什么声道结构”，与单纯 pitch 不同。</div>
+    <div><b>LUFS</b> — Loudness Units Full Scale，常用于衡量感知响度。</div>
+    <div><b>DC Offset</b> — 直流偏移；波形中心偏离 0，属于需要清理的技术问题。</div>
+    <div><b>Concurrency</b> — 并发控制；规定同类声音同时最多播放多少个。</div>
+    <div><b>Virtualization</b> — 声音虚拟化；超出播放资源时仍保留逻辑状态，必要时再恢复。</div>
+    <div><b>Acoustic LOD</b> — 声学细节层级；按距离、重要性和规模降低音频复杂度。</div>
+    <div><b>MetaSounds</b> — Unreal 原生程序化音频 / DSP 图系统。</div>
+    <div><b>Audio Modulation</b> — UE 的全局音频参数与控制总线系统。</div>
+    <div><b>Middleware</b> — 音频中间件，例如 Wwise、FMOD。</div>
+    <div><b>Stem / Layer</b> — 可独立混合和控制的音频层。</div>
+    <div><b>One-shot</b> — 一次性播放的短音效，不循环。</div>
+    <div><b>Sound Cluster</b> — 本手册中的“声学簇”；多个远距离同类事件聚合后的整体声场表示。</div>
+  </div>
+</section>
+
+<footer>
+  <p>版本 v1.0 · 基线日期 2026-08-23。外部 AI 平台、价格和插件兼容性可能快速变化；稳定层应是 Sound Bible、分层设计、REAPER 项目组织、命名/QA、MetaSounds 参数接口和 Acoustic LOD，而不是某一家生成器。</p>
+</footer>
+</main>
+</div>
+
+<script>
+const root=document.documentElement;
+const themeBtn=document.getElementById('theme');
+const saved=localStorage.getItem('rts-audio-theme'); if(saved) root.dataset.theme=saved;
+themeBtn.onclick=()=>{const n=root.dataset.theme==='light'?'dark':'light';root.dataset.theme=n;localStorage.setItem('rts-audio-theme',n)};
+const search=document.getElementById('search');
+const searchable=[...document.querySelectorAll('.searchable')];
+function doSearch(){const q=search.value.trim().toLowerCase();searchable.forEach(el=>{const t=(el.innerText+' '+(el.dataset.tags||'')).toLowerCase();el.classList.toggle('hidden-by-search',q && !t.includes(q));});}
+search.addEventListener('input',doSearch);
+const filterBtns=[...document.querySelectorAll('.filterbtn')];
+filterBtns.forEach(btn=>btn.onclick=()=>{const branch=btn.dataset.filter;filterBtns.forEach(b=>b.classList.toggle('active',b===btn));document.querySelectorAll('[data-branch]').forEach(el=>el.classList.toggle('hidden-by-branch',branch!=='all'&&el.dataset.branch!==branch));});
+let expanded=false;
+document.getElementById('expand').onclick=(e)=>{expanded=!expanded;document.querySelectorAll('details').forEach(d=>d.open=expanded);e.currentTarget.textContent=expanded?'折叠':'展开';};
+const navLinks=[...document.querySelectorAll('#nav a')]; const secs=navLinks.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const obs=new IntersectionObserver(entries=>entries.forEach(en=>{if(en.isIntersecting)navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+en.target.id));}),{rootMargin:'-18% 0 -72% 0'});
+secs.forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>

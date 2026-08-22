@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>RTS AI 3D 资产生产管线手册｜2026-08-23</title>
+<style>
+:root{
+  --bg:#0c1017; --panel:#121824; --panel2:#171f2d; --text:#e9eef7; --muted:#9ca9bb;
+  --line:#293346; --accent:#70a7ff; --accent2:#8ae0c1; --warn:#ffcf70; --danger:#ff8585;
+  --good:#8ee69f; --chip:#1c2636; --shadow:0 10px 30px rgba(0,0,0,.18);
+}
+html[data-theme="light"]{
+  --bg:#f4f6f9; --panel:#ffffff; --panel2:#f8fafc; --text:#1d2633; --muted:#607086;
+  --line:#dde4ed; --accent:#326fd1; --accent2:#167b67; --warn:#9b6700; --danger:#b93c3c;
+  --good:#2b7e40; --chip:#edf2f8; --shadow:0 8px 24px rgba(25,45,75,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.72 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+button,input{font:inherit}
+.topbar{
+  position:sticky;top:0;z-index:50;display:flex;gap:10px;align-items:center;
+  padding:10px 18px;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(14px);border-bottom:1px solid var(--line)
+}
+.brand{font-weight:750;white-space:nowrap}
+.search{flex:1;max-width:620px;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px 11px}
+.iconbtn,.filterbtn{
+  border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:9px;padding:7px 10px;cursor:pointer
+}
+.iconbtn:hover,.filterbtn:hover,.filterbtn.active{border-color:var(--accent);background:var(--chip)}
+.layout{display:grid;grid-template-columns:260px minmax(0,1fr);max-width:1500px;margin:0 auto}
+.sidebar{
+  position:sticky;top:54px;height:calc(100vh - 54px);overflow:auto;padding:20px 16px;border-right:1px solid var(--line)
+}
+.sidebar .meta{font-size:12px;color:var(--muted);margin-bottom:14px}
+.nav a{display:block;color:var(--muted);padding:6px 9px;border-left:2px solid transparent;border-radius:0 8px 8px 0}
+.nav a:hover,.nav a.active{color:var(--text);background:var(--chip);border-left-color:var(--accent);text-decoration:none}
+.main{padding:28px clamp(18px,4vw,56px) 80px;max-width:1180px}
+.hero{
+  padding:30px;border:1px solid var(--line);border-radius:18px;background:
+  radial-gradient(circle at 85% 10%,color-mix(in srgb,var(--accent) 18%,transparent),transparent 32%),
+  linear-gradient(145deg,var(--panel),var(--panel2));box-shadow:var(--shadow)
+}
+.hero h1{font-size:clamp(27px,4vw,45px);line-height:1.15;margin:0 0 12px}
+.hero p{max-width:900px;color:var(--muted);font-size:16px}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.badge{padding:5px 9px;border:1px solid var(--line);border-radius:999px;background:var(--chip);font-size:12px;color:var(--muted)}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0 4px}
+.summary>div{padding:14px;background:color-mix(in srgb,var(--panel2) 90%,transparent);border:1px solid var(--line);border-radius:12px}
+.summary b{display:block;margin-bottom:5px}
+section{scroll-margin-top:72px;margin-top:34px}
+h2{font-size:26px;margin:0 0 12px}
+h3{font-size:19px;margin:0 0 9px}
+h4{font-size:16px;margin:0 0 6px}
+.lead{color:var(--muted);max-width:920px}
+.pipeline{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:14px;border:1px solid var(--line);
+  border-radius:14px;background:var(--panel);margin:16px 0
+}
+.stagechip{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;background:var(--chip);border:1px solid var(--line);border-radius:10px}
+.arrow{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{
+  border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:17px;box-shadow:var(--shadow)
+}
+.card p:last-child{margin-bottom:0}
+.card .kicker{font-size:12px;color:var(--accent2);text-transform:uppercase;letter-spacing:.07em}
+.mini{font-size:13px;color:var(--muted)}
+.callout{border-left:4px solid var(--accent);padding:12px 15px;background:var(--panel);border-radius:0 12px 12px 0;margin:14px 0}
+.callout.warn{border-left-color:var(--warn)}
+.callout.good{border-left-color:var(--good)}
+.callout.danger{border-left-color:var(--danger)}
+table{width:100%;border-collapse:collapse;margin:12px 0 18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:table}
+th,td{padding:10px 11px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}
+th{background:var(--panel2);font-size:13px}
+tr:last-child td{border-bottom:0}
+.rating{white-space:nowrap;color:var(--warn)}
+.tag{display:inline-block;font-size:11px;padding:2px 6px;border-radius:6px;background:var(--chip);border:1px solid var(--line);margin:1px}
+.term{border-bottom:1px dotted var(--accent);cursor:help}
+details{
+  border:1px solid var(--line);background:var(--panel);border-radius:12px;margin:10px 0;overflow:hidden
+}
+summary{cursor:pointer;padding:12px 14px;font-weight:650;background:var(--panel2)}
+details .inside{padding:4px 14px 14px}
+.toolrow{display:grid;grid-template-columns:170px 1fr 1fr 110px;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.toolrow:last-child{border-bottom:0}
+.toolname{font-weight:700}
+.pro{color:var(--good)} .con{color:var(--danger)}
+.links{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.links a{padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--chip);font-size:12px}
+.steps{counter-reset:step}
+.step{position:relative;padding:14px 15px 14px 54px;border:1px solid var(--line);border-radius:12px;background:var(--panel);margin:9px 0}
+.step:before{
+  counter-increment:step;content:counter(step);position:absolute;left:14px;top:13px;width:27px;height:27px;border-radius:50%;
+  display:grid;place-items:center;background:var(--accent);color:white;font-weight:800
+}
+.gate{border:1px solid color-mix(in srgb,var(--good) 55%,var(--line));background:color-mix(in srgb,var(--good) 7%,var(--panel));padding:12px 14px;border-radius:12px;margin:10px 0}
+.stop{border:1px solid color-mix(in srgb,var(--warn) 55%,var(--line));background:color-mix(in srgb,var(--warn) 7%,var(--panel));padding:12px 14px;border-radius:12px}
+.branch-human{--branch:#6aa4ff}.branch-kaiju{--branch:#ab87ff}
+.branch-mark{border-top:3px solid var(--branch)}
+.resource-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.resource{padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.resource small{display:block;color:var(--muted);margin-top:2px}
+.glossary{columns:2;column-gap:24px}
+.glossary div{break-inside:avoid;margin:0 0 10px}
+.glossary b{color:var(--accent2)}
+footer{margin-top:40px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:18px}
+.hidden-by-search,.hidden-by-branch{display:none!important}
+@media(max-width:980px){
+  .layout{grid-template-columns:1fr}.sidebar{display:none}.main{padding:20px 16px 60px}.summary,.grid3{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}
+  .toolrow{grid-template-columns:1fr}.resource-list{grid-template-columns:1fr}.glossary{columns:1}.brand{display:none}
+}
+@media print{
+  .topbar,.sidebar{display:none}.layout{display:block}.main{max-width:none;padding:0}.card,details{box-shadow:none;break-inside:avoid}
+  details .inside{display:block}details>summary{list-style:none}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">RTS AI 3D Pipeline</div>
+  <input id="search" class="search" placeholder="搜索：例如“多视图 / 重拓扑 / 怪兽 / Meshy / UV”">
+  <button class="filterbtn active" data-filter="all">全部</button>
+  <button class="filterbtn" data-filter="human">Human</button>
+  <button class="filterbtn" data-filter="kaiju">Kaiju</button>
+  <button id="theme" class="iconbtn" title="切换明暗主题">◐</button>
+  <button id="expand" class="iconbtn" title="展开/折叠全部">展开</button>
+</div>
+
+<div class="layout">
+<aside class="sidebar">
+  <div class="meta">版本 v2.0 · 2026-08-23<br>面向单人 RTS 美术生产</div>
+  <nav class="nav" id="nav">
+    <a href="#overview">0. 先看结论</a>
+    <a href="#stage1">1. 草图与概念输入</a>
+    <a href="#stage2">2. AI 概念细化</a>
+    <a href="#stage3">3. 多视图设计稿</a>
+    <a href="#stage4">4. AI 生成 3D</a>
+    <a href="#stage5">5. 分件 / 拓扑 / UV</a>
+    <a href="#stage6">6. 材质与贴图</a>
+    <a href="#stage7">7. 绑定与动画</a>
+    <a href="#stage8">8. Blender 技术验收</a>
+    <a href="#stage9">9. UE5.8 入库验收</a>
+    <a href="#budget">10. 工具与性价比</a>
+    <a href="#resources">11. 讨论与学习资料</a>
+    <a href="#glossary">12. 中英术语表</a>
+  </nav>
+</aside>
+
+<main class="main">
+<header class="hero" id="overview">
+  <h1>AI 辅助 3D 资产生产管线手册</h1>
+  <p>针对“大规模现代/近未来人类部队 vs 少量 Hero Kaiju”的单人 3D RTS。人类装备的目标是达到 <b>WARNO / Broken Arrow 级 RTS 实战可读性</b>，怪兽则作为项目视觉核心投入更高精度。手册按实际制作顺序写，英文术语尽量在首次出现处给出中文解释。</p>
+  <div class="badges">
+    <span class="badge">UE 5.8.x</span><span class="badge">Blender 5.2 LTS</span>
+    <span class="badge">Human：高吞吐</span><span class="badge">Kaiju：Hero 资产</span>
+    <span class="badge">AI 生成器可替换</span><span class="badge">两个人工 Gate 不可取消</span>
+  </div>
+  <div class="summary">
+    <div><b>人类装备</b><span class="mini">轮廓、比例、兵种识别 > 近景细节。大量零件用材质、贴花和共享模块表达。</span></div>
+    <div><b>怪兽</b><span class="mini">少量、高辨识度、高形变质量。AI 负责起点，人负责最终形体、拓扑、Rig 和表现。</span></div>
+    <div><b>AI 工具</b><span class="mini">不押注永久赢家。固定输入、QA 和引擎规范，生成后端按项目 benchmark 随时替换。</span></div>
+  </div>
+</header>
+
+<section class="searchable" data-tags="总览 流程 pipeline human kaiju">
+  <h2>一张图看完整管线</h2>
+  <div class="pipeline">
+    <a class="stagechip" href="#stage1">① 手绘草图</a><span class="arrow">→</span>
+    <a class="stagechip" href="#stage2">② AI 细化</a><span class="arrow">→</span>
+    <a class="stagechip" href="#stage3">③ 3D-ready 多视图</a><span class="arrow">→</span>
+    <a class="stagechip" href="#stage4">④ 多模型 3D 竞赛</a><span class="arrow">→</span>
+    <a class="stagechip" href="#stage5">⑤ 分件 / 拓扑 / UV</a><span class="arrow">→</span>
+    <a class="stagechip" href="#stage6">⑥ 材质</a><span class="arrow">→</span>
+    <a class="stagechip" href="#stage7">⑦ Rig / 动画</a><span class="arrow">→</span>
+    <a class="stagechip" href="#stage8">⑧ Blender QA</a><span class="arrow">→</span>
+    <a class="stagechip" href="#stage9">⑨ UE5.8 QA</a>
+  </div>
+  <div class="callout good"><b>最重要的架构原则：</b>只固定“输入标准 → 验收标准 → DCC/引擎标准”。Meshy、Tripo、Rodin、Hunyuan、Hi3D 等属于可替换的 <span class="term" title="后端：完成某项计算任务、但不应该绑死整个流程的服务或模型">生成后端</span>。</div>
+</section>
+
+<section id="stage1" class="searchable" data-tags="草图 concept sketch Krita Photoshop 手绘 设计">
+  <h2>1. 草图与概念输入：先把设计问题解决</h2>
+  <p class="lead">这一阶段的目标不是画得漂亮，而是让“形状为什么这样”变得明确。你会画画，因此应把 AI 用在扩展和整理，而不是让 AI 替你决定核心造型。</p>
+  <div class="grid2">
+    <div class="card branch-human branch-mark" data-branch="human">
+      <div class="kicker">Human</div><h3>人类装备：从任务需求推导形状</h3>
+      <p>先确定任务、尺寸、载荷、动力、武器/传感器位置，再画 <span class="term" title="Silhouette：只看黑色轮廓时仍能辨认资产的外形">Silhouette（轮廓）</span>。你的设计准则是“极端工程逻辑”，不是“多加科幻细节”。</p>
+      <p class="mini">必须先锁定：总长/翼展/高度、主要质量块、武器/发动机数量、运动件、与其它单位的尺度关系。</p>
+    </div>
+    <div class="card branch-kaiju branch-mark" data-branch="kaiju">
+      <div class="kicker">Kaiju</div><h3>怪兽：先设计“现象”，再设计身体</h3>
+      <p>先定义它如何改变云、雨、阴影、地形、雷达和声音，再画局部肢体和完整轮廓。避免“普通动物放大 100 倍”的默认答案。</p>
+      <p class="mini">必须先锁定：尺度感、主要身体质量、弱点/武器器官、Phase 变化、与天气/环境融合方式。</p>
+    </div>
+  </div>
+  <details open><summary>推荐工具与选择</summary><div class="inside">
+    <div class="toolrow"><div class="toolname">Krita / Photoshop</div><div><span class="pro">优：</span>你直接控制构图、线稿、paint-over，设计权最稳定。</div><div><span class="con">缺：</span>需要自己画；但对你反而不是问题。</div><div><b>性价比：★★★★★</b></div></div>
+    <div class="toolrow"><div class="toolname">Blender Grease Pencil</div><div><span class="pro">优：</span>复杂机械可以直接在简单 3D blockout 上画，天然避免透视矛盾。</div><div><span class="con">缺：</span>前期设置比纯 2D 慢。</div><div><b>性价比：★★★★☆</b></div></div>
+  </div></details>
+  <div class="gate"><b>Gate 1：草图可进入 AI 细化的条件</b><br>不看材质、不看光效，只看线稿或灰模，就已经能说明“它是什么、哪个方向朝前、主要部件在哪里、为什么这么设计”。</div>
+</section>
+
+<section id="stage2" class="searchable" data-tags="AI 概念细化 Scenario ComfyUI ControlNet image edit 风格一致">
+  <h2>2. AI 概念细化：AI 负责补充，不负责篡改</h2>
+  <p class="lead">把概念艺术圣经转成稳定的编辑约束：保留轮廓和部件布局，只补工程细节、材质逻辑、表面分区和局部设计。比“从提示词重新抽一张”更重要的是 <b>reference-conditioned editing（基于参考图的编辑）</b>。</p>
+
+  <details open><summary>工具比较：Scenario vs ComfyUI</summary><div class="inside">
+    <table>
+      <thead><tr><th>工具</th><th>适合你的用法</th><th>优点</th><th>缺点</th><th>当前性价比判断</th></tr></thead>
+      <tbody>
+        <tr><td><b>ComfyUI</b></td><td>长期主工作台；把“概念圣经约束 + 参考图 + 局部 mask + 编辑模型”固定成节点流程。</td><td>开源、本地、可复现、可批处理、未来换模型容易。</td><td>学习成本高；节点生态变化快，需要维护工作流。</td><td class="rating">★★★★★</td></tr>
+        <tr><td><b>Scenario</b></td><td>希望少折腾节点时，用它管理自定义风格、编辑模型、资产版本，并直接接 Tripo 等 3D 模型。</td><td>面向游戏资产、工作区清晰、可训练自有风格，概念→3D 路径短。</td><td>订阅成本；平台内调用多种模型时容易与其它订阅重复付费。</td><td class="rating">★★★★☆</td></tr>
+      </tbody>
+    </table>
+    <div class="links">
+      <a href="https://docs.comfy.org/" target="_blank">ComfyUI 官方文档</a>
+      <a href="https://www.scenario.com/" target="_blank">Scenario 平台</a>
+      <a href="https://www.scenario.com/pricing" target="_blank">Scenario 定价</a>
+      <a href="https://www.scenario.com/apps/game-assets-concept-to-3d-model-multiview" target="_blank">Scenario 多视图 Concept→3D 示例</a>
+    </div>
+  </div></details>
+
+  <div class="steps">
+    <div class="step"><b>先保护结构。</b> 使用原始线稿/灰模作为 reference；需要改局部时先做 mask，不要全图重生成。</div>
+    <div class="step"><b>再补“可解释细节”。</b> Human 只增加维护舱盖、蒙皮分区、加强梁、接口、传感器、焊缝等有工程理由的结构；不要添加随机 greeble（无意义机械碎细节）。</div>
+    <div class="step"><b>最后 paint-over。</b> AI 出一轮以后，你手工删掉错误结构并固定关键特征，再让 AI 做下一轮；不要让 AI 连续自我重绘 10 次。</div>
+  </div>
+  <div class="callout warn"><b>避免的老流程：</b>“提示词 → 一张很炫的 cinematic 图 → 直接 Image-to-3D”。烟雾、运动模糊、强透视和遮挡会把后续 3D 生成的结构不确定性放大。</div>
+</section>
+
+<section id="stage3" class="searchable" data-tags="多视图 orthographic turnaround 3D ready reconstruction sheet front side back top">
+  <h2>3. 3D-ready 多视图设计稿：这是整个管线的高杠杆节点</h2>
+  <p class="lead">正式送进 3D 生成器的输入应像“工业设计交接图”，不是海报。建议至少 Main + Left + Right + Back；复杂装备增加 Top，Hero Kaiju 增加关键局部和器官 callout。</p>
+  <div class="grid3">
+    <div class="card"><h3>视角</h3><p>Main / Front / Left / Right / Back；航空器和大型装备强烈建议 Top。不同视图的比例必须一致。</p></div>
+    <div class="card"><h3>画面条件</h3><p>中性背景、中性光照、无遮挡、无景深、无烟尘、无运动模糊；避免广角畸变。</p></div>
+    <div class="card"><h3>机械分件提示</h3><p>明确哪些是 Hull、Turret、Gun、Engine、Radar、Control Surface、Landing Gear 等，后面更容易自动/半自动分件。</p></div>
+  </div>
+  <details><summary>为什么 2026 年更值得认真做多视图？</summary><div class="inside">
+    <p>当前主流模型已经从“单图猜背面”明显转向多视图约束：Meshy 支持最多 4 视图；Hunyuan3D 3.1 官方支持八视图；Tripo 3.1 Multi View 支持四视图。多视图不会消除幻觉，但会显著降低比例漂移和背面胡猜。</p>
+    <div class="links">
+      <a href="https://www.meshy.ai/tutorials/multi-view-image-to-3d" target="_blank">Meshy 多视图教程</a>
+      <a href="https://intl.cloud.tencent.com/zh/document/api/1284/75540" target="_blank">Hunyuan3D 3.1 多视图 API</a>
+      <a href="https://www.scenario.com/blog/tripo-31-multi-view-examples-88ebdd2" target="_blank">Tripo 3.1 Multi View 说明</a>
+    </div>
+  </div></details>
+  <div class="gate"><b>Canonical Design Gate（定稿门）</b><br>只有当你愿意说“以后 3D 必须服从这套设计，而不是继续自由探索”时，才进入下一步。否则继续留在 2D，改 2D 永远比改成品 3D 便宜。</div>
+</section>
+
+<section id="stage4" class="searchable" data-tags="AI 3D generator Meshy 7 Tripo 3.1 P2 Hunyuan3D 3.1 Rodin 2.5 Hi3D v3 TRELLIS2">
+  <h2>4. AI 生成 3D：用 Generator Router，不押注“永久最强”</h2>
+  <p class="lead">同一套多视图输入送给 2–4 个候选后端，选择“人工清理时间最短、结构最忠实”的结果。在线 demo 的漂亮程度不是生产指标。</p>
+
+  <div class="grid2">
+    <div class="card branch-human branch-mark" data-branch="human">
+      <div class="kicker">Human 推荐</div><h3>默认：Tripo / Hunyuan；Meshy 作为强力第二意见</h3>
+      <p>对于 WARNO / Broken Arrow 级装备，最重要的是快速得到正确轮廓、可拆部件和可控面数。当前优先考虑 <b>Tripo 3.1 + Smart Mesh</b>、<b>Hunyuan3D 3.1</b>；复杂单视图重建可让 <b>Meshy 7</b> 参加竞赛。</p>
+    </div>
+    <div class="card branch-kaiju branch-mark" data-branch="kaiju">
+      <div class="kicker">Kaiju 推荐</div><h3>默认：Rodin / Hi3D V3 / Hunyuan 多模型竞赛</h3>
+      <p>怪兽需要更强的大中形体和复杂曲面。AI 输出只当作 base volume（基础体），不要把自动低模结果直接当最终 Hero mesh。</p>
+    </div>
+  </div>
+
+  <details open><summary>当前主流 3D 生成器：面向本项目的实用比较</summary><div class="inside">
+    <table>
+      <thead><tr><th>工具</th><th>更适合</th><th>强项</th><th>主要短板</th><th>本项目定位</th></tr></thead>
+      <tbody>
+        <tr><td><b>Tripo 3.1 / P2.0 Preview</b></td><td>批量机械、普通 RTS 单位</td><td>生成快；Smart Mesh；Segmentation；DCC Bridge；P2.0 已出现 native quad（原生四边面）与面数控制。</td><td>P2.0 截至 8/23 仍是 Preview；纹理和复杂有机体上限不总是最高。</td><td><span class="tag">Human 主力</span><span class="tag">高性价比</span></td></tr>
+        <tr><td><b>Hunyuan3D 3.1</b></td><td>多视图装备、批处理/API</td><td>官方八视图；PBR；可指定面数；还有组件、智能拓扑、UV、Rig/动作相关 API。</td><td>更像云/API 产品；工作流体验不如纯创作者平台统一。</td><td><span class="tag">Human 主力</span><span class="tag">自动化友好</span></td></tr>
+        <tr><td><b>Meshy 7</b></td><td>结构忠实重建、通用资产</td><td>最新模型强调 geometry alignment；最多四视图；生态成熟；Smart Topology 成本低。</td><td>复杂有机体与某些硬表面细结构仍需重抽/修正；不同模式能力不完全相同。</td><td><span class="tag">全能第二意见</span></td></tr>
+        <tr><td><b>Rodin Gen-2.5</b></td><td>Hero 资产、怪兽、标志性平台</td><td>质量上限高；可选 Quad/Raw；面数范围宽；多图输入；高规格纹理选项。</td><td>相对贵；高质量“命中”可能需要 reroll；不适合把每个箱子都做成 Hero。</td><td><span class="tag">Kaiju 主力</span><span class="tag">Hero Challenger</span></td></tr>
+        <tr><td><b>Hi3D V3.0</b></td><td>高精度复杂曲面/细结构</td><td>2026-08 新版本；2048³ 几何档；最高 8K；强调遮挡/跨视角推理。</td><td>太新，独立 production 经验仍少；Master 档单次成本明显高。</td><td><span class="tag">Kaiju Challenger</span></td></tr>
+        <tr><td><b>TRELLIS.2</b></td><td>本地实验、隐私、未来自动化</td><td>开源；复杂拓扑与 PBR；可本地运行，后端可控。</td><td>官方推荐高显存 NVIDIA 环境；随机输入稳定性与商业平台仍有差距。</td><td><span class="tag">实验池</span></td></tr>
+      </tbody>
+    </table>
+    <div class="links">
+      <a href="https://www.tripo3d.ai/zh/blog" target="_blank">Tripo 官方博客</a>
+      <a href="https://www.tripo3d.ai/blog/tripo-p2-0-preview" target="_blank">Tripo P2.0 Preview</a>
+      <a href="https://cloud.tencent.com/document/product/1804" target="_blank">Hunyuan3D 文档</a>
+      <a href="https://www.meshy.ai/" target="_blank">Meshy</a>
+      <a href="https://docs.hyper3d.ai/en/api-specification/rodin-gen2-5" target="_blank">Rodin Gen-2.5 文档</a>
+      <a href="https://www.hi3d.ai/zh/hi3d-3-0" target="_blank">Hi3D V3.0</a>
+      <a href="https://github.com/microsoft/TRELLIS.2" target="_blank">TRELLIS.2 GitHub</a>
+    </div>
+  </div></details>
+
+  <div class="steps">
+    <div class="step"><b>同输入生成 2–4 个候选。</b> 不要每个模型无限抽卡；初筛只看 clay 白模和轮廓。</div>
+    <div class="step"><b>记录 Cleanup Minutes（人工清理分钟数）。</b> 一个“看起来 95 分、但要修 90 分钟”的模型，往往不如“85 分、15 分钟可入库”的模型。</div>
+    <div class="step"><b>Human 快速停止；Kaiju 才继续深挖。</b> 普通车辆只要达到实战视距可读性就继续下游。Kaiju 则选择最好的基础体进入 sculpt/修形。</div>
+  </div>
+  <div class="stop"><b>Stop Rule：</b>不要为了比较模型而比较模型。若一个 Human H-B 资产在 30 分钟内已经能达到“轮廓正确 + 可分件 + 技术可清理”，就停止 bake-off，进入下游。</div>
+</section>
+
+<section id="stage5" class="searchable" data-tags="segmentation 分件 retopology 重拓扑 topology UV unwrap Smart Mesh P2 Polygon Blender">
+  <h2>5. 分件、重拓扑、UV：把“AI 模型”变成“可维护资产”</h2>
+  <p class="lead"><span class="term" title="Segmentation：按语义或结构把一个模型拆成可独立编辑的部件">Segmentation（语义分件）</span> 和 <span class="term" title="Retopology：重新组织模型表面的面与边，使面数、变形和编辑更合理">Retopology（重拓扑）</span> 是目前 AI 3D 真正进入游戏生产的关键中间层。</p>
+
+  <div class="grid2">
+    <div class="card branch-human branch-mark" data-branch="human">
+      <h3>Human：优先“硬部件拆开”，不要全车绑骨</h3>
+      <p>坦克优先拆成 Hull / Turret / Gun / Radar / Wheels / Hatch；飞机拆 Fuselage / Wings / Control Surfaces / Gear / Engines。绝大多数运动用 UE 组件 Transform（位移/旋转）完成。</p>
+    </div>
+    <div class="card branch-kaiju branch-mark" data-branch="kaiju">
+      <h3>Kaiju：自动四边面只是 first pass</h3>
+      <p>肩、胯、颈、嘴、膜翼、触手根部、弱点开合处都必须做 deformation test（形变测试）。<b>Quad（四边面）≠ 好的动画拓扑。</b></p>
+    </div>
+  </div>
+
+  <details open><summary>当前工具选择</summary><div class="inside">
+    <table>
+      <thead><tr><th>任务</th><th>首选</th><th>备选</th><th>准则</th></tr></thead>
+      <tbody>
+        <tr><td>机械分件</td><td>Tripo Segmentation v2</td><td>Hunyuan Component / Blender 手拆</td><td>分件边界要服务运动与损伤，而不是为了“分得多”。</td></tr>
+        <tr><td>Human 自动低模</td><td>Tripo Smart Mesh / P2.0 Preview</td><td>Meshy Smart Topology / Hunyuan Polygon 1.5 / Rodin Quad</td><td>只修会影响轮廓、阴影、旋转和性能的问题。</td></tr>
+        <tr><td>Kaiju 重拓扑</td><td>AI first pass + Blender/RetopoFlow 手修</td><td>Rodin Quad / Tripo P2</td><td>以极限姿态变形为最终判据。</td></tr>
+        <tr><td>UV</td><td>Substance 12.1 Hard Surface Auto Unwrap（机械）</td><td>Blender / Hunyuan UV API</td><td>普通 Human 追求快；Hero Kaiju 关键区域人工规划。</td></tr>
+      </tbody>
+    </table>
+    <div class="links">
+      <a href="https://www.tripo3d.ai/blog/tripo-segmentation-v2" target="_blank">Tripo Segmentation v2</a>
+      <a href="https://www.tripo3d.ai/blog/tripo-dcc-bridge-for-blender" target="_blank">Tripo Blender Bridge</a>
+      <a href="https://intl.cloud.tencent.com/zh/document/product/1284/77048" target="_blank">Hunyuan 智能拓扑 Polygon 1.5</a>
+      <a href="https://experienceleague.adobe.com/en/docs/substance-3d-painter/using/features/automatic-uv-unwrapping" target="_blank">Substance 自动 UV 文档</a>
+    </div>
+  </div></details>
+
+  <div class="callout danger"><b>必须修：</b>non-manifold（非流形几何）、错误法线、严重穿插、大平面波浪、炮管/轮子变形、pivot 错误、左右结构错、运动部件无法独立旋转。<br><b>可以不修：</b>隐藏区域不漂亮的 edge flow、静态部件不完美的三角拓扑、远距离不可见的小面数分布问题。</div>
+</section>
+
+<section id="stage6" class="searchable" data-tags="material texture PBR Substance Painter master material trim decal UE">
+  <h2>6. 材质与贴图：Human 靠“统一材质语言”赢，不靠每辆车 8K 独占纹理</h2>
+  <p class="lead"><span class="term" title="PBR：Physically Based Rendering，基于物理的材质工作流，常见贴图包括 Base Color、Roughness、Metallic、Normal">PBR（基于物理渲染材质）</span> 要统一到项目级材质体系。人类装备的大量视觉复杂度应放在材质、贴花和共享纹理上，而不是几何。</p>
+  <div class="grid2">
+    <div class="card branch-human branch-mark" data-branch="human">
+      <h3>Human 材质模板</h3>
+      <p>Painted Metal / Bare Metal / Rubber / Glass / Composite / Heat Coating + Dirt / Oil / Rain / Burn + Decal Atlas（编号、警示、部队标识）。</p>
+      <p class="mini">普通单位默认从 1K–2K 验证，占屏不足时不升分辨率；大型战略平台按实际镜头再加。</p>
+    </div>
+    <div class="card branch-kaiju branch-mark" data-branch="kaiju">
+      <h3>Kaiju 材质</h3>
+      <p>允许更复杂的分区材质、半透明/次表面、湿润度、伤口/弱点状态和环境混合，但要先确认 UE 的 shader 成本。</p>
+    </div>
+  </div>
+  <details><summary>为什么 Substance Painter 12.1 仍值得作为稳定层？</summary><div class="inside">
+    <p>12.1 在 2026 年增加了针对 hard-surface（硬表面机械）的 Auto Unwrap、自动 rebake 和 skew correction，这些正好解决大量 AI 机械 mesh 的“快速整理 → 烘焙 → 项目统一材质”需求。</p>
+    <div class="links">
+      <a href="https://experienceleague.adobe.com/en/docs/substance-3d-painter/using/release-notes/version-12-1" target="_blank">Substance Painter 12.1 Release Notes</a>
+      <a href="https://experienceleague.adobe.com/en/docs/substance-3d-painter/using/features/automatic-uv-unwrapping" target="_blank">Auto UV 教程/文档</a>
+    </div>
+  </div></details>
+  <div class="stop"><b>Human 停止规则：</b>如果一个编号、铆钉、细焊缝只在把摄像机贴到车身上时才能看见，就优先做 Normal / Decal / Trim，而不是继续加几何。</div>
+</section>
+
+<section id="stage7" class="searchable" data-tags="rig 绑定 skin weight AccuRig Rokoko Vision Cascadeur animation 动画 Kaiju">
+  <h2>7. 绑定与动画：机械、人形、Kaiju 三种完全不同</h2>
+
+  <div class="grid3">
+    <div class="card branch-human branch-mark" data-branch="human">
+      <h3>机械装备</h3>
+      <p><b>默认不 Rig。</b> 炮塔、炮管、雷达、襟翼、起落架等优先用独立 Static Mesh Component + Transform。只有真正需要连续变形的部分才上 Skeletal Mesh。</p>
+    </div>
+    <div class="card">
+      <h3>普通人形</h3>
+      <p>AccuRig / Character Creator 负责自动 Rig（骨骼绑定）；普通动作通过 Rokoko Vision 3.0 或动画库，再 Retarget（重定向）到 UE 骨架。</p>
+    </div>
+    <div class="card branch-kaiju branch-mark" data-branch="kaiju">
+      <h3>Hero Kaiju</h3>
+      <p>Custom Skeleton + 人工 weight 检查。Cascadeur 负责关键 pose、物理辅助和 UE Live Link；二级组织运动可在 UE Control Rig / procedural system 中完成。</p>
+    </div>
+  </div>
+
+  <details open><summary>工具比较</summary><div class="inside">
+    <table>
+      <thead><tr><th>工具</th><th>适合</th><th>优点</th><th>注意</th></tr></thead>
+      <tbody>
+        <tr><td><b>AccuRig / Reallusion</b></td><td>士兵、人形 NPC</td><td>自动绑定成熟；UE Auto Setup v2.03 已支持 UE5.8。</td><td>非标准 Kaiju 不应强行套 humanoid。</td></tr>
+        <tr><td><b>Rokoko Vision 3.0</b></td><td>人体动作快速采集</td><td>单摄像机视频→动作；2026.07 重做 solver；迭代成本低。</td><td>当前 Vision 3.0 不以手指追踪为重点；复杂动作仍需 cleanup。</td></tr>
+        <tr><td><b>Cascadeur 2026.2</b></td><td>Kaiju、非 mocap 动作设计</td><td>AutoPosing、AutoPhysics、四足增强、UE Live Link；适合“质量感”动作。</td><td>仍需要理解 pose、重心、时间节奏；不是一键动画机。</td></tr>
+      </tbody>
+    </table>
+    <div class="links">
+      <a href="https://www.reallusion.com/auto-setup/unreal-engine/download.html" target="_blank">Reallusion UE5.8 Auto Setup</a>
+      <a href="https://www.rokoko.com/products/vision" target="_blank">Rokoko Vision 3.0</a>
+      <a href="https://cascadeur.com/help" target="_blank">Cascadeur 官方学习中心</a>
+      <a href="https://www.youtube.com/watch?v=8kepw2neDQU" target="_blank">Cascadeur 官方：UE5 Live Link 视频</a>
+    </div>
+  </div></details>
+  <div class="callout good"><b>Kaiju 动画准则：</b>不要把普通人的动作放慢 10 倍。先做预动作、重心迁移、巨大惯性、落脚反力，再做末端和软组织延迟。</div>
+</section>
+
+<section id="stage8" class="searchable" data-tags="Blender 5.2 LTS QA asset compiler Python 自动化 clean up pivot normals collision naming">
+  <h2>8. Blender 技术验收：把 Blender 当“资产编译器”</h2>
+  <p class="lead">Blender 不必成为你从零建所有东西的地方，但它应该成为所有 AI 资产进入引擎之前的统一技术关口。当前建议锁 <b>Blender 5.2 LTS</b>（2026-07-14 发布，支持至 2028-07）。</p>
+
+  <div class="steps">
+    <div class="step"><b>尺寸 / 朝向 / 原点。</b> 统一米制比例；确认 Forward/Up；设置 <span class="term" title="Pivot：物体旋转、缩放和定位的基准点">Pivot（枢轴点）</span>。</div>
+    <div class="step"><b>Mesh Health。</b> 检查 non-manifold、degenerate faces、法线、重复几何、严重穿插。</div>
+    <div class="step"><b>层级与命名。</b> Human rigid parts 形成清晰父子关系；Kaiju 检查 Skeleton、材质槽和形变区域。</div>
+    <div class="step"><b>固定角度视觉 QA。</b> 自动渲染 8 方向 clay + wireframe，与 Canonical Design 对照。</div>
+    <div class="step"><b>输出。</b> 生成引擎需要的 FBX/GLB、碰撞、socket、LOD/相关设置和 Asset Manifest。</div>
+  </div>
+
+  <details open><summary>最值得写 Python 自动化的检查</summary><div class="inside">
+    <p>Scale、命名、material slot 数量、三角面数、UV channel、法线、non-manifold、bounding box、pivot、碰撞命名、导出路径、固定角度截图。这些都是确定性规则，AI Agent 或 Blender Python 很适合处理。</p>
+    <div class="links">
+      <a href="https://www.blender.org/releases/5-2/" target="_blank">Blender 5.2 LTS</a>
+      <a href="https://docs.blender.org/api/current/" target="_blank">Blender Python API</a>
+      <a href="https://polycount.com/discussion/238705/how-are-you-actually-handling-ai-generated-mesh-cleanup-before-engine-handoff" target="_blank">Polycount：AI Mesh Engine Handoff 讨论</a>
+    </div>
+  </div></details>
+</section>
+
+<section id="stage9" class="searchable" data-tags="Unreal Engine 5.8 UE QA Nanite Skeletal Mesh camera performance draw call">
+  <h2>9. UE5.8 入库验收：最终标准是“游戏里看起来怎样”</h2>
+  <p class="lead">任何资产只有进 UE5.8 后才算完成。DCC 里的漂亮 turntable 不能代替 RTS 摄像机和性能测试。</p>
+
+  <div class="grid3">
+    <div class="card"><h3>Strategic View</h3><p>战略远景：只看轮廓、阵营、单位类型和运动方向。认不出来就回去修 silhouette，不要加纹理细节。</p></div>
+    <div class="card"><h3>Combat View</h3><p>正常战斗距离：要能读出炮塔、武器、发动机、关键模块、伤害状态。</p></div>
+    <div class="card"><h3>Close Tactical View</h3><p>最近的常用战术视距：材质和主要表面结构必须可信，但不是作品集极近景。</p></div>
+  </div>
+
+  <details><summary>Kaiju 专项：Nanite Skeletal Mesh</summary><div class="inside">
+    <p>UE5.8 官方已经列出 Nanite Skeletal Mesh 支持，包括整 mesh 单 draw call、Virtual Shadow Maps、用 Animation LOD 取代传统 Geometry LOD 等。它对高几何复杂度 Kaiju 很有潜力，但仍应作为 <b>A/B 技术验证</b>，不要在第一天就把所有怪兽架构绑死。</p>
+    <p>首只 Hero Kaiju 要同时测：传统 Skeletal Mesh + LOD 与 Nanite Skeletal Mesh，比较 deformation、材质、阴影、morph/WPO、显存和大场景帧时间。</p>
+    <div class="links">
+      <a href="https://dev.epicgames.com/documentation/unreal-engine/working-with-naniteenabled-content" target="_blank">UE5.8：Working with Nanite-Enabled Content</a>
+      <a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/nanite-technical-details" target="_blank">Nanite Technical Details</a>
+    </div>
+  </div></details>
+
+  <div class="gate"><b>Production Gate（入库门）</b><br>Human：三档 RTS 摄像机通过 + 运动件正确 + 技术 QA 通过 + 性能合理，即停止精修。<br>Kaiju：再加极限姿态形变、弱点/Phase、材质状态和环境融合测试。</div>
+</section>
+
+<section id="budget" class="searchable" data-tags="价格 pricing 性价比 cost Tripo Meshy Rodin Hi3D Hunyuan Scenario">
+  <h2>10. 2026-08-23 工具与性价比快照</h2>
+  <p class="lead">价格会变，这里只记录 2026-08-23 能核对到的官方公开信息。不同平台的 credit/积分含义完全不同，<b>不要拿“1 积分多少钱”直接横向比较</b>；更实用的指标是“一个可入库资产的总成本 + cleanup 时间”。</p>
+
+  <table>
+    <thead><tr><th>工具</th><th>公开价格/消耗快照</th><th>对本项目的性价比</th><th>建议买法</th></tr></thead>
+    <tbody>
+      <tr><td><b>ComfyUI</b></td><td>软件开源免费；成本是本地 GPU、时间和维护。</td><td class="rating">★★★★★</td><td>你会画画，长期最值得投入。用它固定“草图→设计细化→多视图”的可复现 workflow。</td></tr>
+      <tr><td><b>Scenario</b></td><td>Starter $15/月；Pro $45/月；Pro 可训练自定义模型。</td><td class="rating">★★★★☆</td><td>当你更重视省时间、统一工作区和风格管理时订；否则用 ComfyUI。</td></tr>
+      <tr><td><b>Tripo</b></td><td>官方中文定价页：年付 Pro 约 ¥139.92/月，3000 积分，厂商估算约 200 个模型。</td><td class="rating">★★★★★ Human</td><td>最适合 Human 批量资产阶段连续订阅；需要 P2 Preview 时仍以 QA 为准。</td></tr>
+      <tr><td><b>Meshy</b></td><td>Pro $20/月、1000 credits；API 中 Meshy-7 Image-to-3D 约 20 credits（无纹理）/30（带纹理），Ultra 额外 5。</td><td class="rating">★★★★☆</td><td>作为通用第二后端或某个月集中使用；不必和 Tripo 永久双订。</td></tr>
+      <tr><td><b>Rodin</b></td><td>Creator $30/月，官网估算约 60 模型；API Gen-2.5 base 0.5 credit，direct credit 标价 $1.5/credit（不同方案实际成本会不同）。</td><td class="rating">★★★★★ Kaiju</td><td>Hero 资产按需买/短订，不要拿来量产普通箱子和车辆。</td></tr>
+      <tr><td><b>Hi3D V3.0 API</b></td><td>官方刊例：2048³ quality + texture + PBR 约 $2.10；master 约 $9.10/次。</td><td class="rating">★★★★☆ Kaiju</td><td>当 Hero Kaiju/复杂平台值得为高精度候选付费时用；先 quality，再决定是否 master。</td></tr>
+      <tr><td><b>Hunyuan3D 3.1</b></td><td>官方 API：Normal 25 积分；Multiview +10；PBR +10；FaceCount +10。支持八视图。</td><td class="rating">★★★★★ 自动化</td><td>适合中国区/API 批量和管线化；人民币真实成本按当时积分包/套餐核算。</td></tr>
+      <tr><td><b>Blender 5.2 LTS</b></td><td>免费开源。</td><td class="rating">★★★★★</td><td>长期固定基线，不追 daily build。</td></tr>
+      <tr><td><b>Rokoko Vision 3.0</b></td><td>官方发布时：Basic $10/月含 10 分钟；Pro $50/月含 250 分钟。</td><td class="rating">★★★★★ 人形动作</td><td>真正开始批量做人体动作时再订。</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout good"><b>我给你的最低成本组合：</b><br>
+  日常：Krita/Photoshop + ComfyUI + Blender 5.2 LTS。<br>
+  Human 批量生产月：加 Tripo Pro；Hunyuan3D 作为 API/多视图 challenger。<br>
+  Hero Kaiju 月：不必继续所有 Human 订阅，按资产调用 Rodin / Hi3D，再进入 Blender/ZBrush/Cascadeur。<br>
+  这样比同时长期订阅 5 个 3D AI 平台更符合单人项目现金流。</div>
+
+  <div class="links">
+    <a href="https://www.tripo3d.ai/zh/pricing" target="_blank">Tripo 定价</a>
+    <a href="https://www.meshy.ai/pricing/" target="_blank">Meshy 定价</a>
+    <a href="https://hyper3d.ai/zh/pricing" target="_blank">Rodin / Hyper3D 定价</a>
+    <a href="https://docs.hi3d.ai/zh/api/getting-started/pricing" target="_blank">Hi3D API 定价</a>
+    <a href="https://intl.cloud.tencent.com/zh/document/product/1284/75281" target="_blank">Hunyuan3D 计费概述</a>
+    <a href="https://www.scenario.com/pricing" target="_blank">Scenario 定价</a>
+  </div>
+</section>
+
+<section id="resources" class="searchable" data-tags="资源 Reddit Hacker News Polycount 教程 YouTube 学习 community discussion">
+  <h2>11. 讨论、学习文章、频道与教程</h2>
+  <p class="lead">下面优先放官方教程与近期生产讨论。社区帖用于了解真实摩擦成本，不把单个 Reddit/HN 用户的数字当行业 benchmark。</p>
+
+  <h3>概念 → 3D</h3>
+  <div class="resource-list">
+    <a class="resource" href="https://www.scenario.com/blog/tripo-image-to-3d-model-ai-2026" target="_blank"><b>Scenario：2026 Image→3D 实际流程</b><small>多视图、Tripo、游戏资产工作流。</small></a>
+    <a class="resource" href="https://www.meshy.ai/tutorials/multi-view-image-to-3d" target="_blank"><b>Meshy：Multi-View Image to 3D</b><small>官方多视图输入建议和常见问题。</small></a>
+    <a class="resource" href="https://www.tripo3d.ai/blog/tripo-studio-tutorial-english" target="_blank"><b>Tripo Studio Tutorial</b><small>Generate / Segmentation / Retopology / Texture / Rigging 全流程。</small></a>
+    <a class="resource" href="https://docs.comfy.org/" target="_blank"><b>ComfyUI 官方文档</b><small>本地可复现 AI 图像工作流基础。</small></a>
+  </div>
+
+  <h3 style="margin-top:20px">真实生产讨论</h3>
+  <div class="resource-list">
+    <a class="resource" href="https://polycount.com/discussion/238705/how-are-you-actually-handling-ai-generated-mesh-cleanup-before-engine-handoff" target="_blank"><b>Polycount：AI mesh 到引擎前怎么清理？</b><small>专业 3D 社区，重点正是 topology、LOD、命名、自动化和 handoff 成本。</small></a>
+    <a class="resource" href="https://www.reddit.com/r/aigamedev/comments/1ucirid/meshy_vs_tripo_vs_rodin_vs_hunyuan_for_game/" target="_blank"><b>Reddit：Meshy / Tripo / Rodin / Hunyuan 生产比较</b><small>同类工具对比；阅读时注意样本与作者偏差。</small></a>
+    <a class="resource" href="https://www.reddit.com/r/TopologyAI/comments/1vmmuk1/ai_retopology_is_getting_insane_i_compared_3/" target="_blank"><b>Reddit：2026-08 Retopology 对比</b><small>Rodin / Tripo / Hunyuan 同源模型比较。</small></a>
+    <a class="resource" href="https://www.reddit.com/r/TopologyAI/comments/1vgbaeh/i_built_a_productionready_3d_character_in_one_day/" target="_blank"><b>Reddit：AI + Blender + AccuRig + UE5.8</b><small>可以看到“AI 起步很快，但传统 3D 清理仍是必需”的完整案例。</small></a>
+  </div>
+
+  <h3 style="margin-top:20px">Hacker News：值得看的工程观点</h3>
+  <div class="resource-list">
+    <a class="resource" href="https://news.ycombinator.com/item?id=47828896" target="_blank"><b>Show HN：TRELLIS.2 跑在 Apple Silicon</b><small>本地开放模型的速度、显存和可用性讨论。</small></a>
+    <a class="resource" href="https://news.ycombinator.com/item?id=46295295" target="_blank"><b>HN：TRELLIS.2 发布讨论</b><small>包含“官方 demo 与任意输入差距”的重要提醒。</small></a>
+    <a class="resource" href="https://news.ycombinator.com/item?id=43824548" target="_blank"><b>HN：中间文件必须可编辑</b><small>核心观点：生成结果要能进 Blender/项目，而不是困在 prompt/seed 黑箱。</small></a>
+    <a class="resource" href="https://news.ycombinator.com/item?id=44930808" target="_blank"><b>HN：LL3M / Meshy 实际工作流讨论</b><small>“先把图处理成更像干净 matte mesh，再 Image-to-3D，再 Blender 修改”的经验。</small></a>
+  </div>
+
+  <h3 style="margin-top:20px">动画与引擎</h3>
+  <div class="resource-list">
+    <a class="resource" href="https://www.youtube.com/watch?v=8kepw2neDQU" target="_blank"><b>官方 YouTube：Cascadeur 2026.1 UE5 Live Link</b><small>直接看 Live Link 安装、联动和排错。</small></a>
+    <a class="resource" href="https://cascadeur.com/help" target="_blank"><b>Cascadeur Tutorials & Courses</b><small>AutoPosing / AutoPhysics / Rigging 的官方入口。</small></a>
+    <a class="resource" href="https://www.rokoko.com/insights/introducing-rokoko-vision-3-0" target="_blank"><b>Rokoko Vision 3.0 发布与工作流说明</b><small>视频动作捕捉的当前版本和套餐信息。</small></a>
+    <a class="resource" href="https://dev.epicgames.com/documentation/unreal-engine/working-with-naniteenabled-content" target="_blank"><b>Epic：UE5.8 Nanite Skeletal Mesh</b><small>Hero Kaiju 技术验证的官方基础文档。</small></a>
+  </div>
+</section>
+
+<section id="glossary" class="searchable" data-tags="术语 glossary 中文 英文 DCC topology retopo UV PBR Rig Skin LOD">
+  <h2>12. 常用英文术语中文注释</h2>
+  <div class="card glossary">
+    <div><b>DCC</b> — Digital Content Creation，数字内容创作软件，例如 Blender、Maya。</div>
+    <div><b>Silhouette</b> — 轮廓；只看黑色剪影时能否识别单位。</div>
+    <div><b>Canonical Design</b> — 规范定稿；后续 3D 必须服从的最终 2D 设计。</div>
+    <div><b>Turnaround / Multiview</b> — 多视图设定图；前后左右等一致视角。</div>
+    <div><b>Geometry Alignment</b> — 几何对齐；生成模型与参考图比例、结构位置的忠实程度。</div>
+    <div><b>Segmentation</b> — 分件；把一个模型按语义/结构拆为独立部件。</div>
+    <div><b>Topology</b> — 拓扑；模型表面的面、边、点如何组织。</div>
+    <div><b>Retopology / Retopo</b> — 重拓扑；重新整理拓扑以降低面数、改善编辑或变形。</div>
+    <div><b>Quad</b> — 四边面；常用于可编辑/动画网格，但“四边面”本身不保证好拓扑。</div>
+    <div><b>Non-manifold</b> — 非流形几何；拓扑结构不满足正常封闭/连接关系，常造成渲染、布尔、碰撞问题。</div>
+    <div><b>UV Unwrap</b> — UV 展开；把 3D 表面摊平到 2D 贴图坐标。</div>
+    <div><b>PBR</b> — 基于物理渲染材质；通常含 Base Color、Roughness、Metallic、Normal 等。</div>
+    <div><b>Trim Sheet</b> — 可复用条带纹理；用一张图服务大量机械边、槽、面板。</div>
+    <div><b>Decal</b> — 贴花；编号、警示、污渍、局部标记等覆盖式纹理。</div>
+    <div><b>Rig</b> — 绑定/骨骼控制系统；让模型可以动画。</div>
+    <div><b>Skin Weight</b> — 蒙皮权重；顶点受各根骨骼影响的比例。</div>
+    <div><b>Retarget</b> — 动画重定向；把一个骨架的动作映射到另一个骨架。</div>
+    <div><b>Pivot</b> — 枢轴/原点；物体旋转与定位的基准。</div>
+    <div><b>Socket</b> — 挂点；UE 中用于挂武器、特效、模块等的位置节点。</div>
+    <div><b>LOD</b> — Level of Detail，细节层级；距离越远使用越简化的表示。</div>
+    <div><b>Draw Call</b> — 绘制调用；CPU/GPU 提交一次渲染工作的单位之一。</div>
+    <div><b>Cleanup Cost</b> — 清理成本；把 AI 输出修到可入库需要的人力时间，是本管线最重要的 AI 评测指标之一。</div>
+    <div><b>Hero Asset</b> — 英雄级资产；数量少但视觉权重高、允许投入更多人工的核心资产。</div>
+    <div><b>Challenger</b> — 挑战后端；不是默认工具，但在高价值资产上与默认工具同输入竞争。</div>
+  </div>
+</section>
+
+<footer>
+  <p>版本：v2.0 · 基线日期：2026-08-23。外部平台的价格、套餐、Preview 状态与产品能力会变化；实际采购前应重新核对官方页面。本手册的稳定部分是资产分级、输入规范、两条分流管线、Blender/UE QA 和停止规则。</p>
+</footer>
+</main>
+</div>
+
+<script>
+const root=document.documentElement;
+const themeBtn=document.getElementById('theme');
+const saved=localStorage.getItem('rts-pipeline-theme');
+if(saved) root.dataset.theme=saved;
+themeBtn.onclick=()=>{
+  const next=root.dataset.theme==='light'?'dark':'light';
+  root.dataset.theme=next; localStorage.setItem('rts-pipeline-theme',next);
+};
+
+const search=document.getElementById('search');
+const searchable=[...document.querySelectorAll('.searchable')];
+function applySearch(){
+  const q=search.value.trim().toLowerCase();
+  searchable.forEach(el=>{
+    const txt=(el.innerText+' '+(el.dataset.tags||'')).toLowerCase();
+    el.classList.toggle('hidden-by-search',q && !txt.includes(q));
+  });
+}
+search.addEventListener('input',applySearch);
+
+let branch='all';
+const filterBtns=[...document.querySelectorAll('.filterbtn')];
+filterBtns.forEach(btn=>btn.onclick=()=>{
+  branch=btn.dataset.filter;
+  filterBtns.forEach(b=>b.classList.toggle('active',b===btn));
+  document.querySelectorAll('[data-branch]').forEach(el=>{
+    el.classList.toggle('hidden-by-branch',branch!=='all' && el.dataset.branch!==branch);
+  });
+});
+
+let expanded=false;
+document.getElementById('expand').onclick=(e)=>{
+  expanded=!expanded;
+  document.querySelectorAll('details').forEach(d=>d.open=expanded);
+  e.currentTarget.textContent=expanded?'折叠':'展开';
+};
+
+const navLinks=[...document.querySelectorAll('#nav a')];
+const sections=navLinks.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(en=>{
+    if(en.isIntersecting){
+      navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+en.target.id));
+    }
+  });
+},{rootMargin:'-18% 0px -72% 0px'});
+sections.forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>
