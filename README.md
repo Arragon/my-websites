@@ -1,14 +1,30 @@
-# my-web
+# my-websites
 
 这是 Arragon 的静态网页存档，首页是自动生成的导航页。
 
+## 目录结构
+
+- `pages/projects/`：一般项目企划与项目文档。
+- `pages/projects/RTS-game-design/`：RTS 游戏设计、概念艺术与 AI 辅助生产管线文档。
+- `pages/knowledge/literature/`：文学与美学知识地图。
+- `pages/knowledge/philosophy/`：哲学与思想知识地图。
+
 ## 添加新页面
 
-将任意 `.html` 或 `.htm` 文件上传到 [`pages/`](./pages/) 下对应的主题目录并推送到 `main`。主页会递归读取这些目录、按主题分组展示，因此不需要再编辑 `index.html` 或维护页面清单。
+将 `.html` 或 `.htm` 文件上传到 `pages/` 下对应的主题目录并推送到 `main`。导航页会递归读取目录并按子目录分组，因此通常不需要手工维护页面清单。
 
-当前主题目录为：`pages/projects/`（项目企划）、`pages/knowledge/literature/`（文学与美学）和 `pages/knowledge/philosophy/`（哲学与思想）。新增主题时可直接创建新的子目录，导航会以目录名作为分组标题；如需更友好的中文标题，再为其补充导航映射即可。
+导航同时会检查目标页面是否已经由 GitHub Pages 实际发布。原因是 `main` 分支会先于 GitHub Pages 部署更新；GitHub 官方说明推送后站点更新可能需要数分钟。因此刚上传的新文件可能暂时显示为“等待 Pages 发布”，而不会提前生成一个会返回 404 的链接。
 
-页面地址为：`https://arragon.github.io/my-websites/pages/文件名.html`。启用 GitHub Pages 后，导航首页地址为：`https://arragon.github.io/my-websites/`。
+RTS 相关页面统一放在：
 
-建议使用清晰的英文、中文或下划线文件名；导航会自动把下划线和连字符显示为空格。
-personal webs
+`pages/projects/RTS-game-design/`
+
+对应公开地址形式为：
+
+`https://arragon.github.io/my-websites/pages/projects/RTS-game-design/文件名.html`
+
+导航首页：
+
+`https://arragon.github.io/my-websites/`
+
+建议使用稳定、清晰的文件名。移动或重命名页面时，应同步检查页面内部是否存在指向旧路径的相对链接。
